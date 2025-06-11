@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Gestor de Medicamentos</title>
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -10,133 +10,774 @@
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
     crossorigin="anonymous"
   >
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+    
     body {
-      padding: 2rem;
-      max-width: 800px;
-      margin: auto;
-      background-color: #eaf4f4;
+      padding: 1rem;
+      max-width: 100%;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: #333;
       font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
+    
+    .main-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    
+    @media (min-width: 768px) {
+      body {
+        padding: 2rem;
+      }
+      
+      .main-container {
+        padding: 2rem;
+        border-radius: 20px;
+        max-width: 1000px;
+      }
+    }
+    
     #loginScreen {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: #f8f9fa;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 9999;
+      padding: 1rem;
     }
+    
+    .login-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 100%;
+      max-width: 350px;
+    }
+    
+    @media (min-width: 768px) {
+      .login-card {
+        padding: 3rem;
+        max-width: 400px;
+      }
+    }
+    
     #loginScreen input {
       margin-bottom: 1rem;
-      max-width: 300px;
+      width: 100%;
+      border-radius: 10px;
+      border: 2px solid #e9ecef;
+      padding: 12px 15px;
+      transition: all 0.3s ease;
+      font-size: 16px; /* Prevents zoom on iOS */
     }
+    
+    #loginScreen input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
     .med-group {
-      margin-bottom: 2rem;
-      background-color: #fff;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
       padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      border: 1px solid #e9ecef;
+      transition: all 0.3s ease;
     }
+    
+    @media (min-width: 768px) {
+      .med-group {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      }
+      
+      .med-group:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+      }
+    }
+    
     .group-title {
       font-weight: bold;
-      font-size: 1.25rem;
-      border-bottom: 2px solid #007bff;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-    }
-    .med-card {
-      background-color: white;
-      border: 1px solid #dee2e6;
-      border-left: 6px solid #0d6efd;
-      border-radius: 6px;
-      padding: 1rem;
-      margin-bottom: 0.5rem;
-      position: relative;
-      transition: transform 0.2s;
-    }
-    .med-card:hover {
-      transform: scale(1.01);
-    }
-    .warning {
-      border-left-color: #dc3545;
-      background-color: #fff0f0;
-    }
-    .delete-button {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background-color: transparent;
-      border: none;
-      color: #dc3545;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 1.2rem;
-    }
-    .delete-button:hover {
-      text-decoration: underline;
-    }
-    .form-section {
-      background-color: #ffffff;
-      padding: 1.5rem;
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 0.75rem 1rem;
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      word-break: break-word;
     }
-    .form-section input, .form-section select {
+    
+    @media (min-width: 768px) {
+      .group-title {
+        font-size: 1.3rem;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        gap: 10px;
+      }
+    }
+    
+    .med-card {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-left: 6px solid #28a745;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    @media (min-width: 768px) {
+      .med-card {
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      }
+      
+      .med-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      }
+    }
+    
+    .med-card.warning {
+      border-left-color: #ffc107;
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+      animation: pulse 2s infinite;
+    }
+    
+    .med-card.expired {
+      border-left-color: #dc3545;
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3); }
+      50% { box-shadow: 0 4px 15px rgba(255, 193, 7, 0.6); }
+      100% { box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3); }
+    }
+    
+    @media (min-width: 768px) {
+      @keyframes pulse {
+        0% { box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3); }
+        50% { box-shadow: 0 8px 25px rgba(255, 193, 7, 0.6); }
+        100% { box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3); }
+      }
+    }
+    
+    .med-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+      .med-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+    }
+    
+    .med-info-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      padding: 0.25rem 0;
+    }
+    
+    @media (min-width: 768px) {
+      .med-info-item {
+        font-size: 0.95rem;
+        padding: 0;
+      }
+    }
+    
+    .med-info-item i {
+      color: #667eea;
+      width: 18px;
+      flex-shrink: 0;
+    }
+    
+    @media (min-width: 768px) {
+      .med-info-item i {
+        width: 20px;
+      }
+    }
+    
+    .action-buttons {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      display: flex;
+      gap: 0.25rem;
+    }
+    
+    @media (min-width: 768px) {
+      .action-buttons {
+        top: 1rem;
+        right: 1rem;
+        gap: 0.5rem;
+      }
+    }
+    
+    .btn-icon {
+      background: transparent;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
       font-size: 1rem;
+      min-width: 36px;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    @media (min-width: 768px) {
+      .btn-icon {
+        padding: 8px;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        min-width: 40px;
+        min-height: 40px;
+      }
+    }
+    
+    .btn-edit {
+      color: #007bff;
+    }
+    
+    .btn-edit:hover, .btn-edit:active {
+      background: rgba(0, 123, 255, 0.1);
+      transform: scale(1.1);
+    }
+    
+    .btn-delete {
+      color: #dc3545;
+    }
+    
+    .btn-delete:hover, .btn-delete:active {
+      background: rgba(220, 53, 69, 0.1);
+      transform: scale(1.1);
+    }
+    
+    .form-section {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+      border: 1px solid #e9ecef;
+    }
+    
+    @media (min-width: 768px) {
+      .form-section {
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+      }
+    }
+    
+    .form-section input, .form-section select {
+      font-size: 16px; /* Prevents zoom on iOS */
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+      padding: 12px 15px;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .form-section input, .form-section select {
+        font-size: 1rem;
+        border-radius: 10px;
+      }
+    }
+    
+    .form-section input:focus, .form-section select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #495057;
+    }
+    
+    .btn {
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: none;
+      font-size: 0.9rem;
+      min-height: 44px; /* Better touch target */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .btn {
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        min-height: 48px;
+      }
+      
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      }
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .btn-info {
+      background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    }
+    
+    .btn-warning {
+      background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+      color: white;
+    }
+    
+    .search-container {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .search-container {
+        margin-bottom: 2rem;
+      }
+    }
+    
+    .search-container i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6c757d;
+      z-index: 2;
+    }
+    
+    #filterInput {
+      padding-left: 45px;
+      border-radius: 25px;
+      border: 2px solid #e9ecef;
+      transition: all 0.3s ease;
+      font-size: 16px; /* Prevents zoom on iOS */
+      height: 48px;
+    }
+    
+    @media (min-width: 768px) {
+      #filterInput {
+        height: 52px;
+      }
+    }
+    
+    #filterInput:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .stats-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    @media (min-width: 768px) {
+      .stat-card {
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      }
+    }
+    
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+    
+    @media (min-width: 768px) {
+      .stat-number {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+    
+    @media (min-width: 768px) {
+      .stat-label {
+        font-size: 0.9rem;
+      }
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      left: 20px;
+      z-index: 10000;
+      min-width: auto;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    @media (min-width: 768px) {
+      .toast {
+        left: auto;
+        min-width: 300px;
+        margin: 0;
+      }
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #6c757d;
+    }
+    
+    @media (min-width: 768px) {
+      .empty-state {
+        padding: 3rem;
+      }
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #dee2e6;
+    }
+    
+    @media (min-width: 768px) {
+      .empty-state i {
+        font-size: 4rem;
+      }
+    }
+    
+    .empty-state h4 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .empty-state h4 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+    }
+    
+    .empty-state p {
+      font-size: 0.9rem;
+      margin-bottom: 0;
+    }
+    
+    @media (min-width: 768px) {
+      .empty-state p {
+        font-size: 1rem;
+      }
+    }
+    
+    /* Mobile-specific improvements */
+    @media (max-width: 767px) {
+      h1 {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+      }
+      
+      h4 {
+        font-size: 1.1rem;
+      }
+      
+      .row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+      }
+      
+      .col-md-4, .col-md-6 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      
+      .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .d-flex.justify-content-between .btn {
+        width: 100%;
+      }
+      
+      .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      .btn-group .btn {
+        width: 100%;
+      }
+      
+      .alert {
+        font-size: 0.85rem;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .alert i {
+        margin-right: 0.5rem;
+      }
+    }
+    
+    /* Touch-friendly improvements */
+    @media (hover: none) and (pointer: coarse) {
+      .btn-icon {
+        min-width: 44px;
+        min-height: 44px;
+      }
+      
+      .med-card {
+        cursor: default;
+      }
+      
+      .med-card:hover {
+        transform: none;
+      }
+      
+      .btn:hover {
+        transform: none;
+      }
+    }
+    
+    /* Landscape orientation adjustments */
+    @media (max-width: 767px) and (orientation: landscape) {
+      .stats-container {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .med-info {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+      
+      .med-info-item {
+        flex: 1;
+        min-width: 120px;
+      }
     }
   </style>
 </head>
 <body>
   <div id="loginScreen">
-    <h2 class="mb-3">Acceso al sistema</h2>
-    <input type="password" class="form-control" id="passwordInput" placeholder="Ingrese la contraseña" />
-    <button class="btn btn-primary mt-2" onclick="checkPassword()">Acceder</button>
-  </div>
-
-  <h1 class="text-center mb-4">Gestor de Medicamentos</h1>
-  <div class="form-section">
-    <div class="row g-2">
-      <div class="col-md-6">
-        <input type="text" class="form-control" id="name" placeholder="Nombre del medicamento" />
-      </div>
-      <div class="col-md-6">
-        <input type="text" class="form-control" id="dose" placeholder="Dosis (ej. 500mg)" />
-      </div>
-      <div class="col-md-6">
-        <input type="date" class="form-control" id="expiryDate" />
-      </div>
-      <div class="col-md-6">
-        <select class="form-select" id="form">
-          <option value="">Seleccione forma farmacéutica</option>
-          <option value="Comprimido">Comprimido</option>
-          <option value="Ampolla">Ampolla</option>
-          <option value="Jarabe">Jarabe</option>
-        </select>
-      </div>
-    </div>
-    <div class="mt-3 d-flex justify-content-between">
-      <button class="btn btn-success" onclick="addMedication()">Agregar Medicamento</button>
-      <button class="btn btn-info text-white" onclick="exportToCSV()">Exportar CSV</button>
+    <div class="login-card">
+      <h2 class="mb-4"><i class="bi bi-shield-lock"></i> Acceso al sistema</h2>
+      <input type="password" class="form-control" id="passwordInput" placeholder="Ingrese la contraseña" />
+      <button class="btn btn-primary mt-3" onclick="checkPassword()">
+        <i class="bi bi-box-arrow-in-right"></i> Acceder
+      </button>
     </div>
   </div>
 
-  <input type="text" class="form-control mb-3" id="filterInput" placeholder="Filtrar por nombre de medicamento..." oninput="renderMedications()" />
+  <div class="main-container">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-capsule"></i> Gestor de Medicamentos
+    </h1>
+    
+    <div class="stats-container" id="statsContainer">
+      <!-- Stats will be populated by JavaScript -->
+    </div>
+    
+    <div class="form-section">
+      <h4 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Medicamento</h4>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nombre del medicamento</label>
+          <input type="text" class="form-control" id="name" placeholder="Ej: Paracetamol" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Dosis</label>
+          <input type="text" class="form-control" id="dose" placeholder="Ej: 500mg" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Fecha de vencimiento</label>
+          <input type="date" class="form-control" id="expiryDate" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Cantidad</label>
+          <input type="number" class="form-control" id="quantity" placeholder="Ej: 20" min="1" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Forma farmacéutica</label>
+          <select class="form-select" id="form">
+            <option value="">Seleccione...</option>
+            <option value="Comprimido">Comprimido</option>
+            <option value="Ampolla">Ampolla</option>
+            <option value="Jarabe">Jarabe</option>
+            <option value="Cápsula">Cápsula</option>
+            <option value="Inyección">Inyección</option>
+            <option value="Crema">Crema</option>
+            <option value="Pomada">Pomada</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 d-flex justify-content-between">
+        <button class="btn btn-success" onclick="addMedication()">
+          <i class="bi bi-plus-lg"></i> Agregar Medicamento
+        </button>
+        <div class="btn-group">
+          <button class="btn btn-info" onclick="exportToCSV()">
+            <i class="bi bi-download"></i> Exportar CSV
+          </button>
+          <button class="btn btn-warning" onclick="clearAll()">
+            <i class="bi bi-trash"></i> Limpiar Todo
+          </button>
+        </div>
+      </div>
+    </div>
 
-  <div id="medicationList"></div>
+    <div class="search-container">
+      <i class="bi bi-search"></i>
+      <input type="text" class="form-control" id="filterInput" placeholder="Buscar medicamentos..." oninput="renderMedications()" />
+    </div>
+
+    <div id="medicationList"></div>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Cargando medicamentos...</p>
+    </div>
+  </div>
+
+  <!-- Toast for notifications -->
+  <div class="toast-container">
+    <div class="toast" id="toast" role="alert">
+      <div class="toast-header">
+        <strong class="me-auto" id="toastTitle">Notificación</strong>
+        <button type="button" class="btn-close" onclick="hideToast()"></button>
+      </div>
+      <div class="toast-body" id="toastBody">
+        Mensaje aquí
+      </div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = "medications";
+    let editingIndex = -1;
+
+    function showToast(title, message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastBody = document.getElementById('toastBody');
+      
+      toastTitle.textContent = title;
+      toastBody.textContent = message;
+      
+      toast.className = `toast show bg-${type} text-white`;
+      
+      setTimeout(() => {
+        hideToast();
+      }, 3000);
+    }
+
+    function hideToast() {
+      document.getElementById('toast').classList.remove('show');
+    }
 
     function checkPassword() {
       const input = document.getElementById("passwordInput").value;
-      if (input === "farmacia1234") {
+      if (input === "123") {
         document.getElementById("loginScreen").style.display = "none";
+        showToast("¡Bienvenido!", "Acceso exitoso al sistema", "success");
       } else {
-        alert("Contraseña incorrecta.");
+        showToast("Error", "Contraseña incorrecta", "danger");
+        document.getElementById("passwordInput").value = "";
       }
     }
 
@@ -156,17 +797,97 @@
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    function deleteMedication(index) {
+    function updateStats() {
       const meds = loadMedications();
-      meds.splice(index, 1);
+      const total = meds.length;
+      const expiringSoon = meds.filter(m => {
+        const days = daysUntil(m.expiryDate);
+        return days <= 7 && days >= 0;
+      }).length;
+      const expired = meds.filter(m => daysUntil(m.expiryDate) < 0).length;
+
+      document.getElementById('statsContainer').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${total}</div>
+          <div class="stat-label">Total Medicamentos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${expiringSoon}</div>
+          <div class="stat-label">Por Vencer</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${expired}</div>
+          <div class="stat-label">Vencidos</div>
+        </div>
+      `;
+    }
+
+    function deleteMedication(index) {
+      if (confirm('¿Está seguro de que desea eliminar este medicamento?')) {
+        const meds = loadMedications();
+        const deletedMed = meds[index];
+        meds.splice(index, 1);
+        saveMedications(meds);
+        renderMedications();
+        showToast("Eliminado", `Medicamento "${deletedMed.name}" eliminado`, "success");
+      }
+    }
+
+    function editMedication(index) {
+      const meds = loadMedications();
+      const med = meds[index];
+      
+      document.getElementById("name").value = med.name;
+      document.getElementById("dose").value = med.dose;
+      document.getElementById("expiryDate").value = med.expiryDate;
+      document.getElementById("quantity").value = med.quantity;
+      document.getElementById("form").value = med.form || "";
+      
+      editingIndex = index;
+      
+      document.querySelector('.btn-success').innerHTML = '<i class="bi bi-check-lg"></i> Actualizar Medicamento';
+      document.querySelector('.btn-success').onclick = updateMedication;
+      
+      showToast("Edición", "Modo edición activado", "info");
+    }
+
+    function updateMedication() {
+      const name = document.getElementById("name").value.trim();
+      const dose = document.getElementById("dose").value.trim();
+      const expiryDate = document.getElementById("expiryDate").value;
+      const quantity = document.getElementById("quantity").value.trim();
+      const form = document.getElementById("form").value;
+
+      if (!name || !dose || !expiryDate || !quantity) {
+        showToast("Error", "Por favor, complete todos los campos", "danger");
+        return;
+      }
+
+      const meds = loadMedications();
+      meds[editingIndex] = { name, dose, expiryDate, quantity, form };
       saveMedications(meds);
+      
+      clearForm();
+      editingIndex = -1;
       renderMedications();
+      showToast("Actualizado", "Medicamento actualizado correctamente", "success");
+    }
+
+    function clearForm() {
+      document.getElementById("name").value = "";
+      document.getElementById("dose").value = "";
+      document.getElementById("expiryDate").value = "";
+      document.getElementById("quantity").value = "";
+      document.getElementById("form").value = "";
+      
+      document.querySelector('.btn-success').innerHTML = '<i class="bi bi-plus-lg"></i> Agregar Medicamento';
+      document.querySelector('.btn-success').onclick = addMedication;
     }
 
     function groupByNameAndDose(meds) {
       const grouped = {};
       meds.forEach((med, index) => {
-        const key = `${med.name}|${med.dose}`;
+        const key = `${med.name}|${med.dose}|${med.quantity}|${med.form}`;
         if (!grouped[key]) grouped[key] = [];
         grouped[key].push({ ...med, index });
       });
@@ -175,24 +896,45 @@
 
     function renderMedications() {
       const list = document.getElementById("medicationList");
-      list.innerHTML = "";
       const filter = document.getElementById("filterInput").value.toLowerCase();
-      const meds = loadMedications().filter(m => m.name.toLowerCase().includes(filter));
-      const grouped = groupByNameAndDose(meds);
+      const meds = loadMedications().filter(m => 
+        m.name.toLowerCase().includes(filter) ||
+        m.dose.toLowerCase().includes(filter) ||
+        (m.form && m.form.toLowerCase().includes(filter))
+      );
+      
+      if (meds.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <i class="bi bi-capsule"></i>
+            <h4>No hay medicamentos</h4>
+            <p>${filter ? 'No se encontraron medicamentos con ese filtro.' : 'Agregue su primer medicamento usando el formulario de arriba.'}</p>
+          </div>
+        `;
+        updateStats();
+        return;
+      }
 
+      const grouped = groupByNameAndDose(meds);
       const sortedKeys = Object.keys(grouped).sort((a, b) => {
         const nameA = a.split("|")[0].toLowerCase();
         const nameB = b.split("|")[0].toLowerCase();
         return nameA.localeCompare(nameB);
       });
 
+      list.innerHTML = "";
+
       sortedKeys.forEach(key => {
-        const [name, dose] = key.split("|");
+        const [name, dose, quantity, form] = key.split("|");
         const group = document.createElement("div");
         group.className = "med-group";
+        
         const title = document.createElement("div");
         title.className = "group-title";
-        title.textContent = `${name} - ${dose}`;
+        title.innerHTML = `
+          <i class="bi bi-capsule"></i>
+          <span>${name} - ${dose} - ${quantity} ${form ? `(${form})` : ''}</span>
+        `;
         group.appendChild(title);
 
         grouped[key].sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
@@ -201,42 +943,137 @@
           const daysLeft = daysUntil(med.expiryDate);
           const isWarning = daysLeft <= 7 && daysLeft >= 0;
           const isExpired = daysLeft < 0;
+          
           const card = document.createElement("div");
-          card.className = "med-card" + (isWarning || isExpired ? " warning" : "");
+          card.className = `med-card ${isWarning ? 'warning' : ''} ${isExpired ? 'expired' : ''}`;
+          
+          const statusIcon = isExpired ? 'bi-exclamation-triangle-fill' : 
+                           isWarning ? 'bi-exclamation-circle-fill' : 'bi-check-circle-fill';
+          const statusColor = isExpired ? '#dc3545' : isWarning ? '#ffc107' : '#28a745';
+          
           card.innerHTML = `
-            <button class="delete-button" onclick="deleteMedication(${med.index})">✕</button>
-            <div class="medication-info">Vence: ${new Date(med.expiryDate).toLocaleDateString()}</div>
-            <div class="medication-info">Días restantes: ${daysLeft >= 0 ? daysLeft : '0'}</div>
-            ${isWarning ? "<div class='medication-info'><strong>¡Este medicamento está por vencer!</strong></div>" : ""}
-            ${isExpired ? "<div class='medication-info'><strong>¡Este medicamento está vencido!</strong></div>" : ""}
+            <div class="action-buttons">
+              <button class="btn-icon btn-edit" onclick="editMedication(${med.index})" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn-icon btn-delete" onclick="deleteMedication(${med.index})" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+            <div class="med-info">
+              <div class="med-info-item">
+                <i class="bi bi-calendar-event"></i>
+                <span>Vence: ${new Date(med.expiryDate).toLocaleDateString('es-ES')}</span>
+              </div>
+              <div class="med-info-item">
+                <i class="bi bi-clock"></i>
+                <span>Días restantes: ${daysLeft >= 0 ? daysLeft : '0'}</span>
+              </div>
+              <div class="med-info-item">
+                <i class="bi bi-${statusIcon}" style="color: ${statusColor}"></i>
+                <span>${isExpired ? 'VENCIDO' : isWarning ? 'Por vencer' : 'Vigente'}</span>
+              </div>
+            </div>
+            ${isWarning ? "<div class='alert alert-warning'><i class='bi bi-exclamation-triangle-fill'></i> ¡Este medicamento está por vencer!</div>" : ""}
+            ${isExpired ? "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle-fill'></i> ¡Este medicamento está vencido!</div>" : ""}
           `;
           group.appendChild(card);
         });
 
         list.appendChild(group);
       });
+      
+      updateStats();
     }
 
     function addMedication() {
       const name = document.getElementById("name").value.trim();
       const dose = document.getElementById("dose").value.trim();
       const expiryDate = document.getElementById("expiryDate").value;
+      const quantity = document.getElementById("quantity").value.trim();
+      const form = document.getElementById("form").value;
 
-      if (!name || !dose || !expiryDate) {
-        alert("Por favor, complete todos los campos.");
+      if (!name || !dose || !expiryDate || !quantity) {
+        showToast("Error", "Por favor, complete todos los campos obligatorios", "danger");
         return;
       }
 
       const meds = loadMedications();
-      meds.push({ name, dose, expiryDate });
+      meds.push({ name, dose, expiryDate, quantity, form });
       saveMedications(meds);
-      document.getElementById("name").value = "";
-      document.getElementById("dose").value = "";
-      document.getElementById("expiryDate").value = "";
+      
+      clearForm();
       renderMedications();
+      showToast("Agregado", `Medicamento "${name}" agregado correctamente`, "success");
     }
 
-    renderMedications();
+    function exportToCSV() {
+      const meds = loadMedications();
+      if (meds.length === 0) {
+        showToast("Error", "No hay medicamentos para exportar", "warning");
+        return;
+      }
+
+      const headers = ['Nombre', 'Dosis', 'Fecha de Vencimiento', 'Cantidad', 'Forma Farmacéutica', 'Días Restantes'];
+      const csvContent = [
+        headers.join(','),
+        ...meds.map(med => [
+          `"${med.name}"`,
+          `"${med.dose}"`,
+          `"${new Date(med.expiryDate).toLocaleDateString('es-ES')}"`,
+          `"${med.quantity}"`,
+          `"${med.form || ''}"`,
+          `"${daysUntil(med.expiryDate)}"`
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `medicamentos_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showToast("Exportado", "Archivo CSV descargado correctamente", "success");
+    }
+
+    function clearAll() {
+      if (confirm('¿Está seguro de que desea eliminar TODOS los medicamentos? Esta acción no se puede deshacer.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderMedications();
+        showToast("Limpiado", "Todos los medicamentos han sido eliminados", "info");
+      }
+    }
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+      renderMedications();
+      
+      // Add enter key support for password
+      document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          checkPassword();
+        }
+      });
+      
+      // Add enter key support for form fields
+      const formInputs = ['name', 'dose', 'expiryDate', 'quantity', 'form'];
+      formInputs.forEach(id => {
+        document.getElementById(id).addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            if (editingIndex >= 0) {
+              updateMedication();
+            } else {
+              addMedication();
+            }
+          }
+        });
+      });
+    });
   </script>
 </body>
 </html>
+
