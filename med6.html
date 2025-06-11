@@ -20,21 +20,26 @@
       padding: 1rem;
       max-width: 100%;
       margin: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #333;
-      font-family: 'Segoe UI', sans-serif;
+      /* Adjust the first rgba for overlay opacity: lower alpha = more visible image */
+      background:
+        linear-gradient(rgba(24,28,27,0.65), rgba(24,28,27,0.75)),
+        url('https://atlantadetoxtreatment.com/wp-content/uploads/2024/08/Untitled-1200-x-900-px-2024-08-28T083215.054.png') center center/cover no-repeat,
+        url('https://www.transparenttextures.com/patterns/hexellence.png');
+      color: #e0e0c7;
+      font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace;
       min-height: 100vh;
       overflow-x: hidden;
     }
     
     .main-container {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(24, 28, 27, 0.98);
       border-radius: 15px;
       padding: 1.5rem;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      box-shadow: 0 20px 40px rgba(0,255,0,0.08);
       backdrop-filter: blur(10px);
       max-width: 100%;
       margin: 0 auto;
+      border: 2px solid #4caf50;
     }
     
     @media (min-width: 768px) {
@@ -346,11 +351,16 @@
       transition: all 0.3s ease;
       border: none;
       font-size: 0.9rem;
-      min-height: 44px; /* Better touch target */
+      min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
+      background: #222;
+      color: #b6ff00;
+      border: 2px solid #4caf50;
+      box-shadow: 0 2px 8px #4caf5033;
+      text-shadow: 0 1px 2px #000a;
     }
     
     @media (min-width: 768px) {
@@ -367,17 +377,142 @@
       }
     }
     
-    .btn-success {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    .btn-success, .btn-info, .btn-warning {
+      background: #222;
+      color: #b6ff00;
+      border: 2px solid #4caf50;
     }
     
-    .btn-info {
-      background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    .btn-success:hover, .btn-info:hover, .btn-warning:hover, .btn:hover {
+      background: #4caf50;
+      color: #181c1b;
+      border-color: #b6ff00;
+      box-shadow: 0 4px 16px #b6ff0033;
     }
     
     .btn-warning {
-      background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-      color: white;
+      color: #fffde4;
+      background: #b6ff00;
+      border-color: #ffe066;
+    }
+    
+    .btn-warning:hover {
+      background: #ffe066;
+      color: #181c1b;
+      border-color: #b6ff00;
+    }
+    
+    .btn-icon {
+      background: #222;
+      color: #b6ff00;
+      border: 2px solid #4caf50;
+      box-shadow: 0 2px 8px #4caf5033;
+    }
+    
+    .btn-icon.btn-edit:hover {
+      background: #4caf50;
+      color: #181c1b;
+      border-color: #b6ff00;
+    }
+    
+    .btn-icon.btn-delete {
+      color: #ffe066;
+      border-color: #ffe066;
+    }
+    
+    .btn-icon.btn-delete:hover {
+      background: #ffe066;
+      color: #181c1b;
+      border-color: #b6ff00;
+    }
+    
+    .form-section, .med-group {
+      background: #232b26;
+      border: 2px solid #4caf50;
+      box-shadow: 0 4px 16px #4caf5022;
+    }
+    
+    .form-section input, .form-section select {
+      background: #181c1b;
+      color: #b6ff00;
+      border: 2px solid #4caf50;
+      font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace;
+    }
+    
+    .form-section input:focus, .form-section select:focus {
+      border-color: #b6ff00;
+      background: #232b26;
+      color: #fffde4;
+    }
+    
+    .form-label {
+      color: #b6ff00;
+      font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace;
+    }
+    
+    .med-card {
+      background: #181c1b;
+      border: 2px solid #4caf50;
+      border-left: 8px solid #b6ff00;
+      color: #fffde4;
+      box-shadow: 0 2px 8px #4caf5033;
+    }
+    
+    .med-card.warning {
+      border-left-color: #ffe066;
+      background: #232b26;
+      color: #ffe066;
+      box-shadow: 0 2px 12px #ffe06655;
+    }
+    
+    .med-card.expired {
+      border-left-color: #ff1744;
+      background: #2d1a1a;
+      color: #ffb6b6;
+      box-shadow: 0 2px 12px #ff174455;
+    }
+    
+    .group-title {
+      background: #232b26;
+      color: #b6ff00;
+      border: 2px solid #4caf50;
+      box-shadow: 0 2px 8px #4caf5033;
+    }
+    
+    .alert {
+      background: #232b26;
+      color: #ffe066;
+      border: 2px solid #ffe066;
+      font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace;
+      box-shadow: 0 2px 8px #ffe06633;
+    }
+    
+    .alert-danger {
+      background: #2d1a1a;
+      color: #ffb6b6;
+      border-color: #ff1744;
+      box-shadow: 0 2px 8px #ff174433;
+    }
+    
+    .alert-warning {
+      background: #232b26;
+      color: #ffe066;
+      border-color: #ffe066;
+      box-shadow: 0 2px 8px #ffe06633;
+    }
+    
+    .toast {
+      background: #232b26;
+      color: #b6ff00;
+      border: 2px solid #4caf50;
+      font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace;
+      box-shadow: 0 2px 8px #4caf5033;
+    }
+    
+    .toast-header {
+      background: #181c1b;
+      color: #b6ff00;
+      border-bottom: 2px solid #4caf50;
     }
     
     .search-container {
@@ -651,6 +786,45 @@
         min-width: 120px;
       }
     }
+    
+    h1.text-center {
+      font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace;
+      color: #b6ff00;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px #4caf50, 0 0 2px #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .bb-title {
+      background: #222;
+      color: #b6ff00;
+      border: 2px solid #4caf50;
+      border-radius: 6px;
+      padding: 0 8px;
+      font-size: 2.2rem;
+      font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace;
+      display: inline-block;
+      margin: 0 4px;
+      box-shadow: 0 2px 8px #4caf50;
+    }
+    
+    .bb-smoke {
+      background: none;
+      color: #b6ff00;
+      font-size: 2.2rem;
+      filter: blur(0.5px) brightness(1.2);
+      opacity: 0.7;
+      margin-left: 8px;
+      animation: smoke 3s infinite alternate;
+    }
+    
+    @keyframes smoke {
+      0% { opacity: 0.7; filter: blur(0.5px); }
+      100% { opacity: 1; filter: blur(2px); }
+    }
   </style>
 </head>
 <body>
@@ -666,7 +840,8 @@
 
   <div class="main-container">
     <h1 class="text-center mb-4">
-      <i class="bi bi-capsule"></i> Gestor de Medicamentos
+      <span class="bb-title">Ge</span>stor de <span class="bb-title">Me</span>dicamentos
+      <span class="bb-smoke">&#9729;</span>
     </h1>
     
     <div class="stats-container" id="statsContainer">
@@ -887,7 +1062,7 @@
     function groupByNameAndDose(meds) {
       const grouped = {};
       meds.forEach((med, index) => {
-        const key = `${med.name}|${med.dose}|${med.quantity}|${med.form}`;
+        const key = `${med.name}|${med.dose} mg |${med.quantity}|${med.form}`;
         if (!grouped[key]) grouped[key] = [];
         grouped[key].push({ ...med, index });
       });
