@@ -11,6 +11,7 @@
     crossorigin="anonymous"
   >
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <script src="https://unpkg.com/@zxing/browser@0.1.1/umd/index.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -55,7 +56,9 @@
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background:
+        linear-gradient(rgba(24,28,27,0.7), rgba(24,28,27,0.8)),
+        url('https://lh4.googleusercontent.com/proxy/P8ByvQqPhYezoJBKJAV8AaLTQR8VcYOy5RwpNP-hLUj836NLrlkl1M8Tds5GFlbmxX9kE0TZp1S55LFq0unRPYGlK3RzW8AYcroOJlDdM-egXP45kBxWTYSamYixqKE1Z6-YXr8AcaNwdaABB9TmVgquHRC065cOVngmC5i-ft20WXA') center center/cover no-repeat;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -719,6 +722,9 @@
           <button class="btn btn-warning" onclick="clearAll()">
             <i class="bi bi-trash"></i> Limpiar Todo
           </button>
+          <button class="btn btn-secondary" type="button" onclick="openBarcodeScanner()">
+            <i class="bi bi-upc-scan"></i> Escanear Código de Barras
+          </button>
         </div>
       </div>
     </div>
@@ -745,6 +751,17 @@
       </div>
       <div class="toast-body" id="toastBody">
         Mensaje aquí
+      </div>
+    </div>
+  </div>
+
+  <!-- Barcode Scanner Modal -->
+  <div id="barcodeModal" style="display:none; position:fixed; z-index:10001; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; flex-direction:column;">
+    <div style="background:#222; padding:1rem; border-radius:10px; max-width:90vw;">
+      <h5 style="color:#b6ff00;">Escanear Código de Barras</h5>
+      <video id="barcodeVideo" style="width:80vw; max-width:400px; border-radius:8px; background:#000;"></video>
+      <div class="d-flex justify-content-end mt-2">
+        <button class="btn btn-danger" onclick="closeBarcodeScanner()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -1047,6 +1064,67 @@
         localStorage.removeItem(STORAGE_KEY);
         renderMedications();
         showToast("Limpiado", "Todos los medicamentos han sido eliminados", "info");
+      }
+    }
+
+    // Barcode Scanner Logic
+    let barcodeScanner = null;
+    let barcodeStream = null;
+
+    async function openBarcodeScanner() {
+      document.getElementById('barcodeModal').style.display = 'flex';
+      const codeReader = window.ZXingBrowser.BrowserMultiFormatReader;
+      barcodeScanner = new codeReader();
+      try {
+        barcodeStream = await barcodeScanner.decodeFromVideoDevice(null, 'barcodeVideo', async (result, err) => {
+          if (result) {
+            closeBarcodeScanner();
+            const ndc = result.text.replace(/[^0-9\-]/g, '');
+            showToast('Buscando medicamento...', `NDC: ${ndc}`, 'info');
+            fetchOpenFDA(ndc);
+          }
+        });
+      } catch (e) {
+        showToast('Error', 'No se pudo acceder a la cámara', 'danger');
+        closeBarcodeScanner();
+      }
+    }
+
+    function closeBarcodeScanner() {
+      document.getElementById('barcodeModal').style.display = 'none';
+      if (barcodeScanner) {
+        barcodeScanner.reset();
+        barcodeScanner = null;
+      }
+      if (barcodeStream) {
+        barcodeStream = null;
+      }
+    }
+
+    async function fetchOpenFDA(ndc) {
+      try {
+        // NDC can be 10 or 11 digits, OpenFDA expects 5-4 or 5-3-2 format
+        // Try both with and without dash
+        let queryNDC = ndc;
+        if (!ndc.includes('-') && ndc.length === 10) {
+          queryNDC = ndc.slice(0,5) + '-' + ndc.slice(5);
+        }
+        const url = `https://api.fda.gov/drug/ndc.json?search=product_ndc:${queryNDC}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('No encontrado');
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          const med = data.results[0];
+          document.getElementById('name').value = med.brand_name || med.generic_name || '';
+          document.getElementById('dose').value = med.dosage_form || '';
+          document.getElementById('form').value = med.dosage_form || '';
+          // Quantity and expiry are not in OpenFDA, leave blank
+          showToast('Éxito', 'Medicamento encontrado y campos rellenados', 'success');
+        } else {
+          showToast('No encontrado', 'No se encontró información para este código', 'warning');
+        }
+      } catch (e) {
+        showToast('Error', 'No se pudo obtener información del medicamento', 'danger');
       }
     }
 
