@@ -905,6 +905,9 @@
         <button class="btn btn-secondary" onclick="retakePhoto()">
           <i class="bi bi-arrow-clockwise"></i> Volver a tomar
         </button>
+        <button class="btn btn-info" onclick="manualEntry()">
+          <i class="bi bi-pencil"></i> Entrada Manual
+        </button>
         <button class="btn btn-danger" onclick="closeImageCapture()">
           <i class="bi bi-x-lg"></i> Cerrar
         </button>
@@ -1320,13 +1323,18 @@
         video.srcObject = stream;
         imageStream = stream;
         
-        video.onloadedmetadata = () => {
-          video.play();
-        };
+        // Wait for video to be ready
+        await new Promise((resolve) => {
+          video.onloadedmetadata = () => {
+            video.play();
+            resolve();
+          };
+        });
         
         showToast('Cámara activada', 'Tome una foto clara del medicamento', 'info');
       } catch (e) {
-        showToast('Error', 'No se pudo acceder a la cámara', 'danger');
+        console.error('Camera error:', e);
+        showToast('Error', 'No se pudo acceder a la cámara: ' + e.message, 'danger');
         closeImageCapture();
       }
     }
@@ -1343,20 +1351,65 @@
       try {
         const video = document.getElementById('cameraVideo');
         const canvas = document.getElementById('captureCanvas');
-        const context = canvas.getContext('2d');
         
+        // Check if video is ready
+        if (video.readyState < 2) {
+          showToast('Error', 'La cámara no está lista. Espere un momento.', 'warning');
+          return;
+        }
+        
+        // Set canvas dimensions to match video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+        
+        const context = canvas.getContext('2d');
+        
+        // Draw the current video frame to canvas
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        showToast('Procesando imagen...', 'Extrayendo información del medicamento', 'info');
+        // Apply image preprocessing for better OCR
+        preprocessImage(context, canvas.width, canvas.height);
+        
+        showToast('Procesando...', 'Analizando imagen del medicamento', 'info');
         
         // Process the image to extract text
         await processImageForText(canvas);
         
         closeImageCapture();
       } catch (e) {
-        showToast('Error', 'No se pudo capturar la imagen', 'danger');
+        console.error('Capture error:', e);
+        showToast('Error', 'No se pudo capturar la imagen: ' + e.message, 'danger');
+      }
+    }
+
+    function preprocessImage(context, width, height) {
+      try {
+        // Get image data
+        const imageData = context.getImageData(0, 0, width, height);
+        const data = imageData.data;
+        
+        // Apply basic preprocessing for better OCR
+        for (let i = 0; i < data.length; i += 4) {
+          // Convert to grayscale
+          const gray = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+          
+          // Enhance contrast
+          const enhanced = gray < 128 ? Math.max(0, gray - 50) : Math.min(255, gray + 50);
+          
+          // Set RGB values
+          data[i] = enhanced;     // Red
+          data[i + 1] = enhanced; // Green
+          data[i + 2] = enhanced; // Blue
+          // Alpha remains unchanged
+        }
+        
+        // Put the processed image data back
+        context.putImageData(imageData, 0, 0);
+        
+        console.log('Image preprocessing completed');
+      } catch (e) {
+        console.error('Image preprocessing failed:', e);
+        // Continue without preprocessing if it fails
       }
     }
 
@@ -1366,35 +1419,74 @@
       showToast('Listo', 'Puede tomar otra foto', 'info');
     }
 
+    function manualEntry() {
+      closeImageCapture();
+      showToast('Entrada manual', 'Complete los campos del medicamento manualmente', 'info');
+      // Focus on the first field
+      document.getElementById('name').focus();
+    }
+
     async function processImageForText(canvas) {
       try {
-        // Convert canvas to blob for processing
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+        showToast('Procesando...', 'Analizando imagen del medicamento', 'info');
         
-        // Use Tesseract.js for OCR (you'll need to include this library)
+        // Convert canvas to blob for processing
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+        
+        // Try OCR with Tesseract.js
         if (typeof Tesseract !== 'undefined') {
-          const result = await Tesseract.recognize(blob, 'spa+eng', {
-            logger: m => console.log(m)
-          });
-          
-          const extractedText = result.data.text;
-          console.log('Extracted text:', extractedText);
-          
-          // Parse the extracted text to fill form fields
-          parseMedicationText(extractedText);
+          try {
+            console.log('Starting OCR processing...');
+            
+            const result = await Tesseract.recognize(blob, 'spa+eng', {
+              logger: m => {
+                console.log('OCR Progress:', m);
+                if (m.status === 'recognizing text') {
+                  showToast('Procesando...', `Reconociendo texto: ${Math.round(m.progress * 100)}%`, 'info');
+                }
+              },
+              // Better OCR configuration
+              tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,()-/ ',
+              preserve_interword_spaces: '1'
+            });
+            
+            const extractedText = result.data.text;
+            console.log('Extracted text:', extractedText);
+            
+            if (extractedText && extractedText.trim().length > 0) {
+              showToast('Texto encontrado', 'Procesando información del medicamento...', 'success');
+              // Parse the extracted text to fill form fields
+              parseMedicationText(extractedText);
+            } else {
+              throw new Error('No text found in image');
+            }
+          } catch (ocrError) {
+            console.error('OCR failed:', ocrError);
+            showToast('OCR falló', 'Intentando detección de código de barras...', 'warning');
+            
+            // Fallback to barcode detection
+            const ndc = await extractNDCFromImage(canvas);
+            if (ndc) {
+              showToast('Código encontrado', `NDC: ${ndc}`, 'success');
+              await fetchOpenFDA(ndc);
+            } else {
+              showToast('Información', 'No se pudo extraer información automáticamente. Use entrada manual.', 'warning');
+            }
+          }
         } else {
-          // Fallback: try to extract NDC from image using barcode detection
+          console.log('Tesseract not available, trying barcode detection...');
+          // Tesseract not available, try barcode detection
           const ndc = await extractNDCFromImage(canvas);
           if (ndc) {
             showToast('Código encontrado', `NDC: ${ndc}`, 'success');
             await fetchOpenFDA(ndc);
           } else {
-            showToast('Información', 'No se pudo extraer información automáticamente. Complete los campos manualmente.', 'warning');
+            showToast('Información', 'OCR no disponible. Complete los campos manualmente.', 'warning');
           }
         }
       } catch (e) {
         console.error('Error processing image:', e);
-        showToast('Error', 'No se pudo procesar la imagen', 'danger');
+        showToast('Error', 'No se pudo procesar la imagen. Complete los campos manualmente.', 'danger');
       }
     }
 
@@ -1418,6 +1510,8 @@
     }
 
     function parseMedicationText(text) {
+      console.log('Parsing text:', text);
+      
       // Parse extracted text to identify medication information
       const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
       
@@ -1425,30 +1519,41 @@
       let dose = '';
       let form = '';
       
-      // Common medication name patterns
+      // Common medication name patterns (expanded list)
       const namePatterns = [
-        /(paracetamol|acetaminophen|ibuprofen|aspirin|omeprazole|metformin|losartan|amlodipine|atorvastatin|metoprolol)/i,
-        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/ // Capitalized words
+        // Common medications
+        /(paracetamol|acetaminophen|ibuprofen|aspirin|omeprazole|metformin|losartan|amlodipine|atorvastatin|metoprolol|amoxicillin|diclofenac|simvastatin|enalapril|furosemide|hydrochlorothiazide|pantoprazole|ranitidine|sertraline|fluoxetine)/i,
+        // Generic patterns for capitalized medication names
+        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/,
+        // Patterns with numbers (like "Paracetamol 500")
+        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+\d+/i
       ];
       
-      // Dose patterns
+      // Dose patterns (expanded)
       const dosePatterns = [
-        /(\d+)\s*(mg|g|ml|mcg)/i,
-        /(\d+)\s*(miligramos|gramos|mililitros)/i
+        /(\d+)\s*(mg|g|ml|mcg|mg\.|g\.|ml\.|mcg\.)/i,
+        /(\d+)\s*(miligramos|gramos|mililitros|microgramos)/i,
+        /(\d+)\s*(mg\/ml|g\/ml|mcg\/ml)/i,
+        // Pattern for dose after medication name
+        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(\d+)\s*(mg|g|ml|mcg)/i
       ];
       
-      // Form patterns
+      // Form patterns (expanded)
       const formPatterns = [
-        /(comprimido|comprimidos|cápsula|cápsulas|ampolla|ampollas|jarabe|jarabes|inyección|inyecciones|crema|cremas|pomada|pomadas)/i
+        /(comprimido|comprimidos|cápsula|cápsulas|ampolla|ampollas|jarabe|jarabes|inyección|inyecciones|crema|cremas|pomada|pomadas|tableta|tabletas|suspensión|suspensiones|gotas|ungüento|ungüentos)/i
       ];
       
+      // Process each line
       for (const line of lines) {
+        console.log('Processing line:', line);
+        
         // Extract medication name
         if (!medicationName) {
           for (const pattern of namePatterns) {
             const match = line.match(pattern);
             if (match) {
               medicationName = match[1].toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+              console.log('Found medication name:', medicationName);
               break;
             }
           }
@@ -1459,7 +1564,13 @@
           for (const pattern of dosePatterns) {
             const match = line.match(pattern);
             if (match) {
-              dose = match[1];
+              // Handle different match groups
+              if (match.length >= 3 && match[2]) {
+                dose = match[2]; // Dose is in second group
+              } else {
+                dose = match[1]; // Dose is in first group
+              }
+              console.log('Found dose:', dose);
               break;
             }
           }
@@ -1471,11 +1582,11 @@
             const match = line.match(pattern);
             if (match) {
               form = match[1].toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-              if (form.endsWith('s')) {
-                form = form; // Keep plural forms
-              } else {
-                form = form + 's'; // Make plural
+              // Convert to plural form for consistency
+              if (!form.endsWith('s')) {
+                form = form + 's';
               }
+              console.log('Found form:', form);
               break;
             }
           }
@@ -1483,17 +1594,28 @@
       }
       
       // Fill form fields with extracted information
+      let filledFields = 0;
+      
       if (medicationName) {
         document.getElementById('name').value = medicationName;
+        filledFields++;
       }
       if (dose) {
         document.getElementById('dose').value = dose;
+        filledFields++;
       }
       if (form) {
         document.getElementById('form').value = form;
+        filledFields++;
       }
       
-      showToast('Información extraída', 'Los campos han sido rellenados automáticamente', 'success');
+      console.log('Filled fields:', filledFields);
+      
+      if (filledFields > 0) {
+        showToast('Información extraída', `Se rellenaron ${filledFields} campos automáticamente`, 'success');
+      } else {
+        showToast('Información', 'No se pudo extraer información específica. Complete los campos manualmente.', 'warning');
+      }
     }
 
     async function fetchOpenFDA(ndc) {
@@ -1547,7 +1669,20 @@
           }
         });
       });
+      
+      // Test camera availability
+      testCameraAvailability();
     });
+    
+    async function testCameraAvailability() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        console.log('Available video devices:', videoDevices.length);
+      } catch (e) {
+        console.error('Cannot enumerate devices:', e);
+      }
+    }
   </script>
 </body>
 </html>
