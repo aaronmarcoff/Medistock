@@ -151,10 +151,6 @@
       background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
     }
     
-    .med-group.inyecciones::before {
-      background: linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%);
-    }
-    
     .med-group.jarabes::before {
       background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
     }
@@ -213,10 +209,6 @@
       background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
     }
     
-    .group-title.inyecciones {
-      background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-    }
-    
     .group-title.jarabes {
       background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
     }
@@ -272,11 +264,6 @@
     .med-card.ampollas {
       border-left-color: #f39c12;
       background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%);
-    }
-    
-    .med-card.inyecciones {
-      border-left-color: #9b59b6;
-      background: linear-gradient(135deg, #ffffff 0%, #f8f0ff 100%);
     }
     
     .med-card.jarabes {
@@ -1556,10 +1543,9 @@
             <option value="Comprimidos">Comprimidos</option>
             <option value="Ampollas">Ampollas</option>
             <option value="Jarabes">Jarabes</option>
-            <option value="Cápsulas">Cápsulas</option>
-            <option value="Inyecciones">Inyecciones</option>
+            <option value="Capsulas">Capsulas</option>
             <option value="Cremas">Cremas</option>
-            <option value="Pomadas">Pomadas</option>
+            <!-- <option value="Inyecciones">Inyecciones</option> -->
           </select>
         </div>
       </div>
@@ -2240,12 +2226,10 @@
         // Convert singular forms to plural for consistent grouping
         const formMapping = {
           'Comprimido': 'Comprimidos',
-          'Cápsula': 'Cápsulas',
+          'Capsula': 'Capsulas',
           'Ampolla': 'Ampollas',
-          'Inyección': 'Inyecciones',
           'Jarabe': 'Jarabes',
-          'Crema': 'Cremas',
-          'Pomada': 'Pomadas'
+          'Crema': 'Cremas'
         };
         
         form = formMapping[form] || form;
@@ -2259,12 +2243,10 @@
     function getFormIcon(form) {
       const iconMap = {
         'Comprimidos': 'bi-tablet',
-        'Cápsulas': 'bi-capsule',
+        'Capsulas': 'bi-capsule',
         'Ampollas': 'bi-droplet',
-        'Inyecciones': 'bi-syringe',
         'Jarabes': 'bi-cup-straw',
         'Cremas': 'bi-moisture',
-        'Pomadas': 'bi-moisture',
         'Sin especificar': 'bi-question-circle'
       };
       return iconMap[form] || 'bi-capsule';
@@ -2273,12 +2255,10 @@
     function getFormCSSClass(form) {
       const classMap = {
         'Comprimidos': 'comprimidos',
-        'Cápsulas': 'capsulas',
+        'Capsulas': 'capsulas',
         'Ampollas': 'ampollas',
-        'Inyecciones': 'inyecciones',
         'Jarabes': 'jarabes',
         'Cremas': 'cremas',
-        'Pomadas': 'pomadas',
         'Sin especificar': 'sin-especificar'
       };
       return classMap[form] || 'sin-especificar';
@@ -2317,12 +2297,10 @@
       // Define the order of pharmaceutical forms for better organization
       const formOrder = [
         'Comprimidos',
-        'Cápsulas', 
+        'Capsulas', 
         'Ampollas',
-        'Inyecciones',
         'Jarabes',
         'Cremas',
-        'Pomadas',
         'Sin especificar'
       ];
       
@@ -2764,7 +2742,7 @@
       
       // Form patterns (expanded)
       const formPatterns = [
-        /(comprimido|comprimidos|cápsula|cápsulas|ampolla|ampollas|jarabe|jarabes|inyección|inyecciones|crema|cremas|pomada|pomadas|tableta|tabletas|suspensión|suspensiones|gotas|ungüento|ungüentos)/i
+        /(comprimido|comprimidos|cápsula|cápsulas|capsula|capsulas|ampolla|ampollas|jarabe|jarabes|crema|cremas|tableta|tabletas|suspensión|suspensiones|gotas|ungüento|ungüentos)/i
       ];
       
       // Process each line
@@ -2805,11 +2783,29 @@
           for (const pattern of formPatterns) {
             const match = line.match(pattern);
             if (match) {
-              form = match[1].toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-              // Convert to plural form for consistency
-              if (!form.endsWith('s')) {
-                form = form + 's';
-              }
+              // Use the same normalization as voice recognition
+              const formMapping = {
+                'cápsulas': 'Capsulas',
+                'cápsula': 'Capsulas',
+                'capsulas': 'Capsulas',
+                'capsula': 'Capsulas',
+                'comprimidos': 'Comprimidos',
+                'comprimido': 'Comprimidos',
+                'ampollas': 'Ampollas',
+                'ampolla': 'Ampollas',
+                'jarabes': 'Jarabes',
+                'jarabe': 'Jarabes',
+                'inyecciones': 'Inyecciones',
+                'inyección': 'Inyecciones',
+                'cremas': 'Cremas',
+                'crema': 'Cremas',
+                'tabletas': 'Comprimidos',
+                'tableta': 'Comprimidos'
+              };
+              
+              const rawForm = match[1].toLowerCase();
+              form = formMapping[rawForm] || match[1].toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+              
               console.log('Found form:', form);
               break;
             }
@@ -3077,22 +3073,68 @@
       
       console.log('Clean transcript:', cleanTranscript);
       
+      // Normalize pharmaceutical form names to handle accents and variations
+      function normalizeForm(form) {
+        console.log('Normalizing form:', form);
+        
+        const formMapping = {
+          // With accents (for backward compatibility)
+          'cápsulas': 'Capsulas',
+          'cápsula': 'Capsulas',
+          'comprimidos': 'Comprimidos',
+          'comprimido': 'Comprimidos',
+          'ampollas': 'Ampollas',
+          'ampolla': 'Ampollas',
+          'jarabes': 'Jarabes',
+          'jarabe': 'Jarabes',
+          'inyecciones': 'Inyecciones',
+          'inyección': 'Inyecciones',
+          'cremas': 'Cremas',
+          'crema': 'Cremas',
+          'tabletas': 'Comprimidos',
+          'tableta': 'Comprimidos',
+          // Without accents (common in voice recognition)
+          'capsulas': 'Capsulas',
+          'capsula': 'Capsulas',
+          'inyeccion': 'Inyecciones'
+        };
+        
+        const normalized = form.toLowerCase().trim();
+        console.log('Normalized form input:', normalized);
+        
+        const result = formMapping[normalized];
+        console.log('Form mapping result:', result);
+        
+        return result || form.replace(/\b\w/g, l => l.toUpperCase());
+      }
+      
       // Pattern for "Agregar [medicamento] [dosis] [forma] [cantidad] vence [fecha]"
-      const pattern = /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)\s+vence\s+(.+)/i;
+      const pattern = /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|capsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|capsula|ampolla|frasco|tubo)\s+vence\s+(.+)/i;
       
       const match = cleanTranscript.match(pattern);
       
       if (match) {
         const [, medication, dose, unit, form, quantity, quantityUnit, dateText] = match;
+        console.log('Regex match found:');
+        console.log('Medication:', medication);
+        console.log('Dose:', dose);
+        console.log('Unit:', unit);
+        console.log('Form (raw):', form);
+        console.log('Quantity:', quantity);
+        console.log('Quantity Unit:', quantityUnit);
+        console.log('Date Text:', dateText);
         
         // Parse the date
         const parsedDate = parseSpanishDate(dateText);
         
         if (parsedDate) {
+          const normalizedForm = normalizeForm(form);
+          console.log('Normalized form result:', normalizedForm);
+          
           return {
             name: medication.trim().replace(/\b\w/g, l => l.toUpperCase()),
             dose: `${dose} ${unit}`,
-            form: form.replace(/\b\w/g, l => l.toUpperCase()),
+            form: normalizedForm,
             quantity: quantity,
             expiryDate: parsedDate
           };
@@ -3102,16 +3144,16 @@
       // Alternative patterns for different word orders
       const alternativePatterns = [
         // "Agregar [medicamento] [dosis] [forma] vence [fecha] [cantidad]"
-        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+vence\s+(.+?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)/i,
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)\s+vence\s+(.+?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|capsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|capsula|ampolla|frasco|tubo)/i,
         
         // "Agregar [medicamento] [forma] [dosis] [cantidad] vence [fecha]"
-        /agregar\s+(.+?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)\s+vence\s+(.+)/i,
+        /agregar\s+(.+?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|capsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|capsula|ampolla|frasco|tubo)\s+vence\s+(.+)/i,
         
         // "Agregar [medicamento] [dosis] [forma] [cantidad] para [fecha]"
-        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)\s+para\s+(.+)/i,
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|capsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|capsula|ampolla|frasco|tubo)\s+para\s+(.+)/i,
         
         // "Agregar [medicamento] [cantidad] [dosis] [forma] vence [fecha]"
-        /agregar\s+(.+?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+vence\s+(.+)/i
+        /agregar\s+(.+?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|capsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|capsula|ampolla|frasco|tubo)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)\s+vence\s+(.+)/i
       ];
       
       for (const altPattern of alternativePatterns) {
@@ -3124,7 +3166,7 @@
             return {
               name: medication.trim().replace(/\b\w/g, l => l.toUpperCase()),
               dose: `${dose} ${unit}`,
-              form: form.replace(/\b\w/g, l => l.toUpperCase()),
+              form: normalizeForm(form),
               quantity: quantity,
               expiryDate: parsedDate
             };
@@ -3135,16 +3177,16 @@
       // Fallback patterns without quantity (default to 1)
       const fallbackPatterns = [
         // "Agregar [medicamento] [dosis] [forma] vence [fecha]"
-        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+vence\s+(.+)/i,
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)\s+vence\s+(.+)/i,
         
         // "Agregar [medicamento] [dosis] vence [fecha] [forma]"
-        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+vence\s+(.+?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)/i,
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+vence\s+(.+?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)/i,
         
         // "Agregar [medicamento] [forma] [dosis] vence [fecha]"
-        /agregar\s+(.+?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+vence\s+(.+)/i,
+        /agregar\s+(.+?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+vence\s+(.+)/i,
         
         // "Agregar [medicamento] [dosis] [forma] para [fecha]"
-        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+para\s+(.+)/i
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|capsulas?|ampollas?|jarabes?|inyecciones?|inyeccion|cremas?|pomadas?|tabletas?)\s+para\s+(.+)/i
       ];
       
       for (const fallbackPattern of fallbackPatterns) {
@@ -3157,7 +3199,7 @@
             return {
               name: medication.trim().replace(/\b\w/g, l => l.toUpperCase()),
               dose: `${dose} ${unit}`,
-              form: form.replace(/\b\w/g, l => l.toUpperCase()),
+              form: normalizeForm(form),
               quantity: '1', // Default quantity
               expiryDate: parsedDate
             };
