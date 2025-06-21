@@ -66,6 +66,14 @@
       justify-content: center;
       z-index: 9999;
       padding: 1rem;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+    }
+    
+    #loginScreen.fade-out {
+      opacity: 0;
+      visibility: hidden;
     }
     
     .login-card {
@@ -76,6 +84,14 @@
       text-align: center;
       width: 100%;
       max-width: 350px;
+      transform: translateY(0);
+      opacity: 1;
+      transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+    }
+    
+    #loginScreen.fade-out .login-card {
+      transform: translateY(-30px);
+      opacity: 0;
     }
     
     @media (min-width: 768px) {
@@ -101,34 +117,77 @@
     }
     
     .med-group {
-      margin-bottom: 1rem;
+      margin-bottom: 2rem;
       background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-      padding: 0.75rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      padding: 1rem;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
       border: 1px solid #e9ecef;
       transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .med-group::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      border-radius: 15px 15px 0 0;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Different top border colors for each group */
+    .med-group.comprimidos::before {
+      background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+    }
+    
+    .med-group.capsulas::before {
+      background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+    }
+    
+    .med-group.ampollas::before {
+      background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+    }
+    
+    .med-group.inyecciones::before {
+      background: linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%);
+    }
+    
+    .med-group.jarabes::before {
+      background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+    }
+    
+    .med-group.cremas::before {
+      background: linear-gradient(90deg, #e67e22 0%, #d35400 100%);
+    }
+    
+    .med-group.pomadas::before {
+      background: linear-gradient(90deg, #1abc9c 0%, #16a085 100%);
+    }
+    
+    .med-group.sin-especificar::before {
+      background: linear-gradient(90deg, #95a5a6 0%, #7f8c8d 100%);
     }
     
     @media (min-width: 768px) {
       .med-group {
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        border-radius: 15px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       }
       
       .med-group:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
       }
     }
     
     .group-title {
       font-weight: bold;
       font-size: 1rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
       padding: 0.6rem 0.8rem;
       border-radius: 8px;
       margin-bottom: 0.75rem;
@@ -136,6 +195,42 @@
       align-items: center;
       gap: 8px;
       word-break: break-word;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-left: 6px solid rgba(255,255,255,0.3);
+    }
+    
+    /* Different colors for each pharmaceutical form */
+    .group-title.comprimidos {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+    
+    .group-title.capsulas {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+    
+    .group-title.ampollas {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    }
+    
+    .group-title.inyecciones {
+      background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    }
+    
+    .group-title.jarabes {
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    }
+    
+    .group-title.cremas {
+      background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    }
+    
+    .group-title.pomadas {
+      background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+    }
+    
+    .group-title.sin-especificar {
+      background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
     }
     
     @media (min-width: 768px) {
@@ -145,6 +240,7 @@
         border-radius: 10px;
         margin-bottom: 1rem;
         gap: 10px;
+        border-left: 8px solid rgba(255,255,255,0.3);
       }
     }
     
@@ -160,6 +256,47 @@
       box-shadow: 0 3px 12px rgba(0,0,0,0.08);
       backdrop-filter: blur(5px);
       padding-right: 5rem; /* Add space for action buttons */
+    }
+    
+    /* Color accents for medication cards based on form */
+    .med-card.comprimidos {
+      border-left-color: #e74c3c;
+      background: linear-gradient(135deg, #ffffff 0%, #fdf2f2 100%);
+    }
+    
+    .med-card.capsulas {
+      border-left-color: #3498db;
+      background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+    }
+    
+    .med-card.ampollas {
+      border-left-color: #f39c12;
+      background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%);
+    }
+    
+    .med-card.inyecciones {
+      border-left-color: #9b59b6;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f0ff 100%);
+    }
+    
+    .med-card.jarabes {
+      border-left-color: #27ae60;
+      background: linear-gradient(135deg, #ffffff 0%, #f0fff0 100%);
+    }
+    
+    .med-card.cremas {
+      border-left-color: #e67e22;
+      background: linear-gradient(135deg, #ffffff 0%, #fff5f0 100%);
+    }
+    
+    .med-card.pomadas {
+      border-left-color: #1abc9c;
+      background: linear-gradient(135deg, #ffffff 0%, #f0fffd 100%);
+    }
+    
+    .med-card.sin-especificar {
+      border-left-color: #95a5a6;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     }
     
     @media (min-width: 768px) {
@@ -484,10 +621,8 @@
       margin-bottom: 1.5rem;
     }
     
-    @media (min-width: 768px) {
-      .search-container {
-        margin-bottom: 2rem;
-      }
+    .search-container .position-relative {
+      position: relative;
     }
     
     .search-container i {
@@ -508,28 +643,41 @@
       height: 48px;
     }
     
+    #sortSelect {
+      border-radius: 25px;
+      border: 2px solid #e9ecef;
+      transition: all 0.3s ease;
+      font-size: 16px; /* Prevents zoom on iOS */
+      height: 48px;
+      background-color: white;
+    }
+    
     @media (min-width: 768px) {
-      #filterInput {
+      .search-container {
+        margin-bottom: 2rem;
+      }
+      
+      #filterInput, #sortSelect {
         height: 52px;
       }
     }
     
-    #filterInput:focus {
+    #filterInput:focus, #sortSelect:focus {
       border-color: #667eea;
       box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
     
     .stats-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.5rem;
       margin-bottom: 1.5rem;
     }
     
     @media (min-width: 768px) {
       .stats-container {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
         margin-bottom: 2rem;
       }
     }
@@ -537,41 +685,41 @@
     .stat-card {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 1rem;
-      border-radius: 12px;
+      padding: 0.75rem;
+      border-radius: 10px;
       text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
     }
     
     @media (min-width: 768px) {
       .stat-card {
-        padding: 1.5rem;
-        border-radius: 15px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
       }
     }
     
     .stat-number {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: bold;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
     }
     
     @media (min-width: 768px) {
       .stat-number {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+        margin-bottom: 0.3rem;
       }
     }
     
     .stat-label {
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       opacity: 0.9;
     }
     
     @media (min-width: 768px) {
       .stat-label {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
       }
     }
     
@@ -792,6 +940,315 @@
         min-width: 120px;
       }
     }
+    
+    /* Enhanced UX Improvements */
+    
+    /* Form validation styles */
+    .form-control.is-invalid {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .form-control.is-valid {
+      border-color: #28a745;
+      box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    .invalid-feedback {
+      display: block;
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+    
+    /* Enhanced button states */
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .btn-loading {
+      position: relative;
+      color: transparent !important;
+    }
+    
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      top: 50%;
+      left: 50%;
+      margin-left: -8px;
+      margin-top: -8px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    /* Enhanced search with suggestions */
+    .search-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 1000;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+    
+    .search-suggestion-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f8f9fa;
+      transition: background-color 0.2s ease;
+    }
+    
+    .search-suggestion-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .search-suggestion-item:last-child {
+      border-bottom: none;
+    }
+    
+    /* Enhanced medication cards */
+    .med-card {
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .med-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .med-card:hover::before {
+      left: 100%;
+    }
+    
+    /* Quick action buttons */
+    .quick-actions {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .quick-action-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .quick-action-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    
+    /* Enhanced stats with animations */
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    
+    .stat-card:hover::after {
+      transform: translateX(100%);
+    }
+    
+    /* Enhanced empty state */
+    .empty-state {
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Enhanced toast notifications */
+    .toast {
+      animation: slideInRight 0.3s ease-out;
+    }
+    
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    /* Enhanced form section */
+    .form-section {
+      position: relative;
+    }
+    
+    .form-section.collapsed {
+      max-height: 60px;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    
+    .form-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #6c757d;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    
+    .form-toggle:hover {
+      color: #495057;
+      transform: scale(1.1);
+    }
+    
+    /* Enhanced medication info display */
+    .med-info-item {
+      position: relative;
+    }
+    
+    .med-info-item .tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .med-info-item:hover .tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    /* Enhanced mobile experience */
+    @media (max-width: 767px) {
+      .quick-actions {
+        bottom: 1rem;
+        right: 1rem;
+      }
+      
+      .quick-action-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+      }
+      
+      .form-section.collapsed {
+        max-height: 50px;
+      }
+    }
+    
+    /* Enhanced accessibility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+    /* Focus indicators for better accessibility */
+    .btn:focus,
+    .form-control:focus,
+    .btn-icon:focus {
+      outline: 2px solid #667eea;
+      outline-offset: 2px;
+    }
+    
+    /* Enhanced loading states */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .loading-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .loading-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
@@ -814,24 +1271,28 @@
       <!-- Stats will be populated by JavaScript -->
     </div>
     
-    <div class="form-section">
+    <div class="form-section" id="formSection">
       <h4 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Medicamento</h4>
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="form-label">Nombre del medicamento</label>
-          <input type="text" class="form-control" id="name" placeholder="Ej: Paracetamol" />
+          <label class="form-label">Nombre del medicamento <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="name" placeholder="Ej: Paracetamol" required />
+          <div class="invalid-feedback" id="nameError"></div>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Dosis</label>
-          <input type="text" class="form-control" id="dose" placeholder="Ej: 500mg" />
+          <label class="form-label">Dosis <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="dose" placeholder="Ej: 500mg" required />
+          <div class="invalid-feedback" id="doseError"></div>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Fecha de vencimiento</label>
-          <input type="date" class="form-control" id="expiryDate" />
+          <label class="form-label">Fecha de vencimiento <span class="text-danger">*</span></label>
+          <input type="date" class="form-control" id="expiryDate" required />
+          <div class="invalid-feedback" id="expiryError"></div>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Cantidad</label>
-          <input type="number" class="form-control" id="quantity" placeholder="Ej: 20" min="1" />
+          <label class="form-label">Cantidad <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="quantity" placeholder="Ej: 20" min="1" required />
+          <div class="invalid-feedback" id="quantityError"></div>
         </div>
         <div class="col-md-4">
           <label class="form-label">Forma farmacéutica</label>
@@ -848,7 +1309,7 @@
         </div>
       </div>
       <div class="mt-4 d-flex justify-content-between">
-        <button class="btn btn-success" onclick="addMedication()">
+        <button class="btn btn-success" id="addButton" onclick="addMedication()">
           <i class="bi bi-plus-lg"></i> Agregar Medicamento
         </button>
         <div class="btn-group">
@@ -866,8 +1327,27 @@
     </div>
 
     <div class="search-container">
-      <i class="bi bi-search"></i>
-      <input type="text" class="form-control" id="filterInput" placeholder="Buscar medicamentos..." oninput="renderMedications()" />
+      <div class="row g-2">
+        <div class="col-md-8">
+          <div class="position-relative">
+            <i class="bi bi-search"></i>
+            <input type="text" class="form-control" id="filterInput" placeholder="Buscar medicamentos..." oninput="renderMedications()" />
+            <div class="search-suggestions" id="searchSuggestions"></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" id="sortSelect" onchange="renderMedications()">
+            <option value="">Ordenar por...</option>
+            <option value="name">Nombre (A-Z)</option>
+            <option value="name-desc">Nombre (Z-A)</option>
+            <option value="expiry">Fecha de vencimiento (próximo)</option>
+            <option value="expiry-desc">Fecha de vencimiento (lejano)</option>
+            <option value="form">Forma farmacéutica</option>
+            <option value="quantity">Cantidad</option>
+            <option value="added">Fecha de agregado</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <div id="medicationList"></div>
@@ -875,6 +1355,29 @@
     <div class="loading" id="loading">
       <div class="spinner"></div>
       <p>Cargando medicamentos...</p>
+    </div>
+  </div>
+
+  <!-- Quick Action Buttons -->
+  <!--
+  <div class="quick-actions" id="quickActions">
+    <button class="quick-action-btn" onclick="scrollToTop()" title="Ir al inicio">
+      <i class="bi bi-arrow-up"></i>
+    </button>
+    <button class="quick-action-btn" onclick="toggleForm()" title="Mostrar/Ocultar formulario">
+      <i class="bi bi-plus"></i>
+    </button>
+    <button class="quick-action-btn" onclick="openImageCapture()" title="Capturar imagen">
+      <i class="bi bi-camera"></i>
+    </button>
+  </div>
+  -->
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p id="loadingText">Procesando...</p>
     </div>
   </div>
 
@@ -918,7 +1421,169 @@
   <script>
     const STORAGE_KEY = "medications";
     let editingIndex = -1;
+    let searchTimeout = null;
+    let isFormCollapsed = false;
 
+    // Enhanced form validation
+    function validateForm() {
+      let isValid = true;
+      const fields = ['name', 'dose', 'expiryDate', 'quantity'];
+      
+      fields.forEach(field => {
+        const element = document.getElementById(field);
+        const errorElement = document.getElementById(field + 'Error');
+        const value = element.value.trim();
+        
+        // Remove previous validation states
+        element.classList.remove('is-valid', 'is-invalid');
+        errorElement.textContent = '';
+        
+        if (!value) {
+          element.classList.add('is-invalid');
+          errorElement.textContent = 'Este campo es obligatorio';
+          isValid = false;
+        } else {
+          // Specific validation rules
+          if (field === 'expiryDate') {
+            const selectedDate = new Date(value);
+            const today = new Date();
+            if (selectedDate <= today) {
+              element.classList.add('is-invalid');
+              errorElement.textContent = 'La fecha debe ser futura';
+              isValid = false;
+            } else {
+              element.classList.add('is-valid');
+            }
+          } else if (field === 'quantity') {
+            const numValue = parseInt(value);
+            if (numValue <= 0) {
+              element.classList.add('is-invalid');
+              errorElement.textContent = 'La cantidad debe ser mayor a 0';
+              isValid = false;
+            } else {
+              element.classList.add('is-valid');
+            }
+          } else {
+            element.classList.add('is-valid');
+          }
+        }
+      });
+      
+      return isValid;
+    }
+
+    // Enhanced search with suggestions
+    function handleSearch() {
+      const filterInput = document.getElementById('filterInput');
+      const suggestionsContainer = document.getElementById('searchSuggestions');
+      const query = filterInput.value.toLowerCase().trim();
+      
+      // Clear previous timeout
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+      
+      // Hide suggestions if query is empty
+      if (!query) {
+        suggestionsContainer.style.display = 'none';
+        renderMedications();
+        return;
+      }
+      
+      // Debounce search
+      searchTimeout = setTimeout(() => {
+        const meds = loadMedications();
+        const suggestions = [];
+        
+        // Find matching medications
+        meds.forEach(med => {
+          if (med.name.toLowerCase().includes(query) ||
+              med.dose.toLowerCase().includes(query) ||
+              (med.form && med.form.toLowerCase().includes(query))) {
+            suggestions.push({
+              text: `${med.name} - ${med.dose}`,
+              type: 'medication'
+            });
+          }
+        });
+        
+        // Show suggestions
+        if (suggestions.length > 0) {
+          suggestionsContainer.innerHTML = suggestions
+            .slice(0, 5)
+            .map(suggestion => `
+              <div class="search-suggestion-item" onclick="selectSuggestion('${suggestion.text}')">
+                <i class="bi bi-capsule"></i> ${suggestion.text}
+              </div>
+            `).join('');
+          suggestionsContainer.style.display = 'block';
+        } else {
+          suggestionsContainer.style.display = 'none';
+        }
+        
+        renderMedications();
+      }, 300);
+    }
+
+    function selectSuggestion(text) {
+      document.getElementById('filterInput').value = text;
+      document.getElementById('searchSuggestions').style.display = 'none';
+      renderMedications();
+    }
+
+    // Form toggle functionality
+    function toggleForm() {
+      const formSection = document.getElementById('formSection');
+      const formToggle = document.getElementById('formToggle');
+      const toggleIcon = formToggle.querySelector('i');
+      
+      isFormCollapsed = !isFormCollapsed;
+      
+      if (isFormCollapsed) {
+        formSection.classList.add('collapsed');
+        toggleIcon.className = 'bi bi-chevron-down';
+        formToggle.title = 'Mostrar formulario';
+      } else {
+        formSection.classList.remove('collapsed');
+        toggleIcon.className = 'bi bi-chevron-up';
+        formToggle.title = 'Ocultar formulario';
+      }
+    }
+
+    // Scroll to top functionality
+    function scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    // Enhanced loading states
+    function showLoading(message = 'Procesando...') {
+      const overlay = document.getElementById('loadingOverlay');
+      const loadingText = document.getElementById('loadingText');
+      loadingText.textContent = message;
+      overlay.classList.add('show');
+    }
+
+    function hideLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.remove('show');
+    }
+
+    // Enhanced button loading state
+    function setButtonLoading(buttonId, isLoading) {
+      const button = document.getElementById(buttonId);
+      if (isLoading) {
+        button.classList.add('btn-loading');
+        button.disabled = true;
+      } else {
+        button.classList.remove('btn-loading');
+        button.disabled = false;
+      }
+    }
+
+    // Enhanced toast with better positioning
     function showToast(title, message, type = 'info') {
       const toast = document.getElementById('toast');
       const toastTitle = document.getElementById('toastTitle');
@@ -927,11 +1592,16 @@
       toastTitle.textContent = title;
       toastBody.textContent = message;
       
-      toast.className = `toast show bg-${type} text-white`;
+      // Remove previous classes
+      toast.className = 'toast';
       
+      // Add new classes
+      toast.classList.add('show', `bg-${type}`, 'text-white');
+      
+      // Auto-hide after 4 seconds
       setTimeout(() => {
         hideToast();
-      }, 3000);
+      }, 4000);
     }
 
     function hideToast() {
@@ -941,8 +1611,16 @@
     function checkPassword() {
       const input = document.getElementById("passwordInput").value;
       if (input === "123") {
-        document.getElementById("loginScreen").style.display = "none";
-        showToast("¡Bienvenido!", "Acceso exitoso al sistema", "success");
+        const loginScreen = document.getElementById("loginScreen");
+        
+        // Add fade-out animation class
+        loginScreen.classList.add('fade-out');
+        
+        // Wait for animation to complete, then hide the element
+        setTimeout(() => {
+          loginScreen.style.display = "none";
+          showToast("¡Bienvenido!", "Acceso exitoso al sistema", "success");
+        }, 600); // Match the CSS transition duration
       } else {
         showToast("Error", "Contraseña incorrecta", "danger");
         document.getElementById("passwordInput").value = "";
@@ -1040,7 +1718,7 @@
         expiryDate, 
         quantity, 
         form, 
-        creationDate: originalMed.creationDate || new Date().toISOString().split('T')[0] // Fallback for old entries
+        creationDate: originalMed.creationDate || new Date().toISOString().split('T')[0]
       };
       saveMedications(meds);
       
@@ -1109,14 +1787,35 @@
       return iconMap[form] || 'bi-capsule';
     }
 
+    function getFormCSSClass(form) {
+      const classMap = {
+        'Comprimidos': 'comprimidos',
+        'Cápsulas': 'capsulas',
+        'Ampollas': 'ampollas',
+        'Inyecciones': 'inyecciones',
+        'Jarabes': 'jarabes',
+        'Cremas': 'cremas',
+        'Pomadas': 'pomadas',
+        'Sin especificar': 'sin-especificar'
+      };
+      return classMap[form] || 'sin-especificar';
+    }
+
     function renderMedications() {
       const list = document.getElementById("medicationList");
       const filter = document.getElementById("filterInput").value.toLowerCase();
-      const meds = loadMedications().filter(m => 
+      const sortBy = document.getElementById("sortSelect").value;
+      
+      let meds = loadMedications().filter(m => 
         m.name.toLowerCase().includes(filter) ||
         m.dose.toLowerCase().includes(filter) ||
         (m.form && m.form.toLowerCase().includes(filter))
       );
+      
+      // Apply sorting to the filtered medications
+      if (sortBy) {
+        meds = sortMedications(meds, sortBy);
+      }
       
       if (meds.length === 0) {
         list.innerHTML = `
@@ -1158,7 +1857,8 @@
 
       sortedForms.forEach(form => {
         const group = document.createElement("div");
-        group.className = "med-group";
+        const formClass = getFormCSSClass(form);
+        group.className = `med-group ${formClass}`;
         
         const title = document.createElement("div");
         title.className = "group-title";
@@ -1166,26 +1866,24 @@
         // Get appropriate icon for each pharmaceutical form
         const formIcon = getFormIcon(form);
         
+        // Add specific CSS class based on pharmaceutical form
+        title.className = `group-title ${formClass}`;
+        
         title.innerHTML = `
           <i class="bi ${formIcon}"></i>
           <span>${form} (${grouped[form].length})</span>
         `;
         group.appendChild(title);
 
-        // Sort medications within each group by name and then by expiry date
-        grouped[form].sort((a, b) => {
-          const nameCompare = a.name.localeCompare(b.name);
-          if (nameCompare !== 0) return nameCompare;
-          return new Date(a.expiryDate) - new Date(b.expiryDate);
-        });
-
+        // The medications are already sorted from the main sorting, so we don't need to sort again
         grouped[form].forEach(med => {
           const daysLeft = daysUntil(med.expiryDate);
           const isWarning = daysLeft <= 7 && daysLeft >= 0;
           const isExpired = daysLeft < 0;
           
           const card = document.createElement("div");
-          card.className = `med-card ${isWarning ? 'warning' : ''} ${isExpired ? 'expired' : ''}`;
+          const formClass = getFormCSSClass(form);
+          card.className = `med-card ${formClass} ${isWarning ? 'warning' : ''} ${isExpired ? 'expired' : ''}`;
           
           const statusIcon = isExpired ? 'bi-exclamation-triangle-fill' : 
                            isWarning ? 'bi-exclamation-circle-fill' : 'bi-check-circle-fill';
@@ -1254,7 +1952,7 @@
       }
 
       const meds = loadMedications();
-      const creationDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+      const creationDate = new Date().toISOString().split('T')[0];
       meds.push({ name, dose, expiryDate, quantity, form, creationDate });
       saveMedications(meds);
       
@@ -1670,6 +2368,11 @@
         });
       });
       
+      // Set minimum date for expiry date input
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('expiryDate').min = tomorrow.toISOString().split('T')[0];
+      
       // Test camera availability
       testCameraAvailability();
     });
@@ -1681,6 +2384,38 @@
         console.log('Available video devices:', videoDevices.length);
       } catch (e) {
         console.error('Cannot enumerate devices:', e);
+      }
+    }
+
+    // Sorting functions
+    function sortMedications(medications, sortBy) {
+      return [...medications].sort((a, b) => {
+        return sortMedicationComparison(a, b, sortBy);
+      });
+    }
+
+    function sortMedicationComparison(a, b, sortBy) {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'expiry':
+          return new Date(a.expiryDate) - new Date(b.expiryDate);
+        case 'expiry-desc':
+          return new Date(b.expiryDate) - new Date(a.expiryDate);
+        case 'form':
+          const formA = a.form || 'Sin especificar';
+          const formB = b.form || 'Sin especificar';
+          return formA.localeCompare(formB);
+        case 'quantity':
+          return parseInt(a.quantity) - parseInt(b.quantity);
+        case 'added':
+          const dateA = a.creationDate ? new Date(a.creationDate) : new Date(0);
+          const dateB = b.creationDate ? new Date(b.creationDate) : new Date(0);
+          return dateB - dateA; // Most recent first
+        default:
+          return 0;
       }
     }
   </script>
