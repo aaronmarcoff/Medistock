@@ -3235,25 +3235,51 @@
             }
           }
           
+          console.log('Extracted date components:', { day, month, year });
+          
           if (month !== undefined && day && year) {
-            const date = new Date(year, month, day);
+            // Create date in local timezone to avoid timezone offset issues
+            const date = new Date(year, month, day, 12, 0, 0, 0); // Use noon to avoid timezone issues
+            
+            console.log('Created date object:', date);
+            console.log('Date components after creation:', {
+              year: date.getFullYear(),
+              month: date.getMonth(),
+              day: date.getDate()
+            });
+            
+            // Validate the date
             if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
-              return date.toISOString().split('T')[0];
+              // Format as YYYY-MM-DD in local timezone
+              const yearStr = date.getFullYear();
+              const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+              const dayStr = String(date.getDate()).padStart(2, '0');
+              const result = `${yearStr}-${monthStr}-${dayStr}`;
+              
+              console.log('Final parsed date string:', result);
+              return result;
+            } else {
+              console.log('Date validation failed - components mismatch');
             }
           }
         }
       }
       
+      console.log('No valid date pattern found');
       return null;
     }
 
     function showVoicePreview(data) {
       const previewContent = document.getElementById('previewContent');
+      
+      // Format the date correctly for display without timezone issues
+      const displayDate = formatDateForDisplay(data.expiryDate);
+      
       previewContent.innerHTML = `
         <div><strong>Medicamento:</strong> ${data.name}</div>
         <div><strong>Dosis:</strong> ${data.dose}</div>
         <div><strong>Forma:</strong> ${data.form}</div>
-        <div><strong>Vence:</strong> ${new Date(data.expiryDate).toLocaleDateString('es-ES')}</div>
+        <div><strong>Vence:</strong> ${displayDate}</div>
         <div><strong>Cantidad:</strong> ${data.quantity}</div>
       `;
       
@@ -3261,6 +3287,18 @@
       document.getElementById('voiceConfirmBtn').style.display = 'inline-flex';
       document.getElementById('voiceStatus').innerHTML = '<i class="bi bi-check-circle"></i> Información detectada correctamente';
       document.getElementById('voiceStatus').style.background = '#27ae60';
+    }
+
+    function formatDateForDisplay(dateString) {
+      // Parse the date string and format it for display in Spanish
+      const [year, month, day] = dateString.split('-').map(num => parseInt(num));
+      const date = new Date(year, month - 1, day); // month is 0-indexed
+      
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
     }
 
     function confirmVoiceEntry() {
