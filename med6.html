@@ -167,6 +167,23 @@
       background: linear-gradient(90deg, #95a5a6 0%, #7f8c8d 100%);
     }
     
+    /* Priority-based styling for medication requests */
+    .med-group.urgente::before {
+      background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+    }
+    
+    .med-group.alta::before {
+      background: linear-gradient(90deg, #fd7e14 0%, #e55a00 100%);
+    }
+    
+    .med-group.media::before {
+      background: linear-gradient(90deg, #ffc107 0%, #e0a800 100%);
+    }
+    
+    .med-group.baja::before {
+      background: linear-gradient(90deg, #28a745 0%, #1e7e34 100%);
+    }
+    
     @media (min-width: 768px) {
       .med-group {
         margin-bottom: 2.5rem;
@@ -223,6 +240,22 @@
     
     .group-title.sin-especificar {
       background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    }
+    
+    .group-title.urgente {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    }
+    
+    .group-title.alta {
+      background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+    }
+    
+    .group-title.media {
+      background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    }
+    
+    .group-title.baja {
+      background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
     }
     
     @media (min-width: 768px) {
@@ -284,6 +317,26 @@
     .med-card.sin-especificar {
       border-left-color: #95a5a6;
       background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+    
+    .med-card.urgente {
+      border-left-color: #dc3545;
+      background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+    }
+    
+    .med-card.alta {
+      border-left-color: #fd7e14;
+      background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%);
+    }
+    
+    .med-card.media {
+      border-left-color: #ffc107;
+      background: linear-gradient(135deg, #ffffff 0%, #fffbf0 100%);
+    }
+    
+    .med-card.baja {
+      border-left-color: #28a745;
+      background: linear-gradient(135deg, #ffffff 0%, #f0fff0 100%);
     }
     
     @media (min-width: 768px) {
@@ -1504,115 +1557,206 @@
     </div>
   </div>
 
-  <div class="main-container">
-    <h1 class="text-center mb-4">
-      <i class="bi bi-capsule"></i> Gestor de Medicamentos
-    </h1>
-    
-    <div class="stats-container" id="statsContainer">
-      <!-- Stats will be populated by JavaScript -->
-    </div>
-    
-    <div class="form-section" id="formSection">
-      <h4 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Medicamento</h4>
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Nombre del medicamento <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="name" placeholder="Ej: Paracetamol" required />
-          <div class="invalid-feedback" id="nameError"></div>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Dosis <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="dose" placeholder="Ej: 500mg" required />
-          <div class="invalid-feedback" id="doseError"></div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Fecha de vencimiento <span class="text-danger">*</span></label>
-          <input type="date" class="form-control" id="expiryDate" required />
-          <div class="invalid-feedback" id="expiryError"></div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Cantidad <span class="text-danger">*</span></label>
-          <input type="number" class="form-control" id="quantity" placeholder="Ej: 20" min="1" required />
-          <div class="invalid-feedback" id="quantityError"></div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Forma farmacéutica</label>
-          <select class="form-select" id="form">
-            <option value="">Seleccione...</option>
-            <option value="Comprimidos">Comprimidos</option>
-            <option value="Ampollas">Ampollas</option>
-            <option value="Jarabes">Jarabes</option>
-            <option value="Capsulas">Capsulas</option>
-            <option value="Cremas">Cremas</option>
-            <!-- <option value="Inyecciones">Inyecciones</option> -->
-          </select>
-        </div>
-      </div>
-      <div class="mt-4 d-flex justify-content-between">
-        <button class="btn btn-success" id="addButton" onclick="addMedication()">
-          <i class="bi bi-plus-lg"></i> Agregar Medicamento
+  <!-- Main Menu Screen -->
+  <div id="mainMenuScreen" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(rgba(24,28,27,0.7), rgba(24,28,27,0.8)), url('https://www.primeraedicion.com.ar/wp-content/uploads/2024/04/medicamentos.jpeg') center center/cover no-repeat; z-index:9998; display:flex; align-items:center; justify-content:center; padding:1rem;">
+    <div style="background:white; padding:2rem; border-radius:15px; box-shadow:0 20px 40px rgba(0,0,0,0.2); text-align:center; width:100%; max-width:500px;">
+      <h2 class="mb-4"><i class="bi bi-capsule"></i> Gestor de Medicamentos</h2>
+      <p class="mb-4 text-muted">Seleccione la opción que desea utilizar:</p>
+      
+      <div class="d-grid gap-3">
+        <button class="btn btn-primary btn-lg" onclick="showMedicationManager()">
+          <i class="bi bi-plus-circle"></i> Gestionar Medicamentos
         </button>
-        <div class="btn-group">
-          <button class="btn btn-info" onclick="exportToCSV()">
-            <i class="bi bi-download"></i> Exportar CSV
-          </button>
-          <button class="btn btn-warning" onclick="clearAll()">
-            <i class="bi bi-trash"></i> Limpiar Todo
-          </button>
-          <button class="btn btn-secondary" type="button" onclick="openImageCapture()">
-            <i class="bi bi-camera"></i> Capturar Imagen
-          </button>
-        </div>
+        <button class="btn btn-success btn-lg" onclick="showMedicationRequests()">
+          <i class="bi bi-list-check"></i> Solicitudes de Medicamentos
+        </button>
+        <button class="btn btn-secondary" onclick="logout()">
+          <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+        </button>
       </div>
     </div>
+  </div>
 
-    <div class="search-container">
-      <div class="row g-2">
-        <div class="col-md-8">
-          <div class="position-relative">
-            <i class="bi bi-search"></i>
-            <input type="text" class="form-control" id="filterInput" placeholder="Buscar medicamentos..." oninput="renderMedications()" />
-            <div class="search-suggestions" id="searchSuggestions"></div>
+  <!-- Medication Manager Screen -->
+  <div id="medicationManagerScreen" style="display:none;">
+    <div class="main-container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-capsule"></i> Gestor de Medicamentos</h1>
+        <button class="btn btn-outline-secondary" onclick="showMainMenu()">
+          <i class="bi bi-arrow-left"></i> Volver al Menú
+        </button>
+      </div>
+      
+      <div class="stats-container" id="statsContainer">
+        <!-- Stats will be populated by JavaScript -->
+      </div>
+      
+      <div class="form-section" id="formSection">
+        <h4 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Medicamento</h4>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Nombre del medicamento <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="name" placeholder="Ej: Paracetamol" required />
+            <div class="invalid-feedback" id="nameError"></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Dosis <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="dose" placeholder="Ej: 500mg" required />
+            <div class="invalid-feedback" id="doseError"></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Fecha de vencimiento <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="expiryDate" required />
+            <div class="invalid-feedback" id="expiryError"></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Cantidad <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="quantity" placeholder="Ej: 20" min="1" required />
+            <div class="invalid-feedback" id="quantityError"></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Forma farmacéutica</label>
+            <select class="form-select" id="form">
+              <option value="">Seleccione...</option>
+              <option value="Comprimidos">Comprimidos</option>
+              <option value="Ampollas">Ampollas</option>
+              <option value="Jarabes">Jarabes</option>
+              <option value="Capsulas">Capsulas</option>
+              <option value="Cremas">Cremas</option>
+              <!-- <option value="Inyecciones">Inyecciones</option> -->
+            </select>
           </div>
         </div>
-        <div class="col-md-4">
-          <select class="form-select" id="sortSelect" onchange="renderMedications()">
-            <option value="">Ordenar por...</option>
-            <option value="name">Nombre (A-Z)</option>
-            <option value="name-desc">Nombre (Z-A)</option>
-            <option value="expiry">Fecha de vencimiento (próximo)</option>
-            <option value="expiry-desc">Fecha de vencimiento (lejano)</option>
-            <option value="form">Forma farmacéutica</option>
-            <option value="quantity">Cantidad</option>
-            <option value="added">Fecha de agregado</option>
-          </select>
+        <div class="mt-4 d-flex justify-content-between">
+          <button class="btn btn-success" id="addButton" onclick="addMedication()">
+            <i class="bi bi-plus-lg"></i> Agregar Medicamento
+          </button>
+          <div class="btn-group">
+            <button class="btn btn-info" onclick="exportToCSV()">
+              <i class="bi bi-download"></i> Exportar CSV
+            </button>
+            <button class="btn btn-warning" onclick="clearAll()">
+              <i class="bi bi-trash"></i> Limpiar Todo
+            </button>
+            <button class="btn btn-secondary" type="button" onclick="openImageCapture()">
+              <i class="bi bi-camera"></i> Capturar Imagen
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div id="medicationList"></div>
-    
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <p>Cargando medicamentos...</p>
+      <div class="search-container">
+        <div class="row g-2">
+          <div class="col-md-8">
+            <div class="position-relative">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-control" id="filterInput" placeholder="Buscar medicamentos..." oninput="renderMedications()" />
+              <div class="search-suggestions" id="searchSuggestions"></div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <select class="form-select" id="sortSelect" onchange="renderMedications()">
+              <option value="">Ordenar por...</option>
+              <option value="name">Nombre (A-Z)</option>
+              <option value="name-desc">Nombre (Z-A)</option>
+              <option value="expiry">Fecha de vencimiento (próximo)</option>
+              <option value="expiry-desc">Fecha de vencimiento (lejano)</option>
+              <option value="form">Forma farmacéutica</option>
+              <option value="quantity">Cantidad</option>
+              <option value="added">Fecha de agregado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="medicationList"></div>
+      
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Cargando medicamentos...</p>
+      </div>
     </div>
   </div>
 
-  <!-- Quick Action Buttons -->
-  <!--
-  <div class="quick-actions" id="quickActions">
-    <button class="quick-action-btn" onclick="scrollToTop()" title="Ir al inicio">
-      <i class="bi bi-arrow-up"></i>
-    </button>
-    <button class="quick-action-btn" onclick="toggleForm()" title="Mostrar/Ocultar formulario">
-      <i class="bi bi-plus"></i>
-    </button>
-    <button class="quick-action-btn" onclick="openImageCapture()" title="Capturar imagen">
-      <i class="bi bi-camera"></i>
-    </button>
+  <!-- Medication Requests Screen -->
+  <div id="medicationRequestsScreen" style="display:none;">
+    <div class="main-container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-list-check"></i> Solicitudes de Medicamentos</h1>
+        <button class="btn btn-outline-secondary" onclick="showMainMenu()">
+          <i class="bi bi-arrow-left"></i> Volver al Menú
+        </button>
+      </div>
+      
+      <div class="form-section">
+        <h4 class="mb-3"><i class="bi bi-plus-circle"></i> Nueva Solicitud</h4>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Nombre del medicamento <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="requestName" placeholder="Ej: Paracetamol" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Dosis</label>
+            <input type="text" class="form-control" id="requestDose" placeholder="Ej: 500mg" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Forma farmacéutica</label>
+            <select class="form-select" id="requestForm">
+              <option value="">Seleccione...</option>
+              <option value="Comprimidos">Comprimidos</option>
+              <option value="Ampollas">Ampollas</option>
+              <option value="Jarabes">Jarabes</option>
+              <option value="Capsulas">Capsulas</option>
+              <option value="Cremas">Cremas</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Cantidad</label>
+            <input type="number" class="form-control" id="requestQuantity" placeholder="Ej: 20" min="1" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Prioridad</label>
+            <select class="form-select" id="requestPriority">
+              <option value="Baja">Baja</option>
+              <option value="Media" selected>Media</option>
+              <option value="Alta">Alta</option>
+              <option value="Urgente">Urgente</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Observaciones</label>
+            <textarea class="form-control" id="requestNotes" rows="3" placeholder="Información adicional sobre la solicitud..."></textarea>
+          </div>
+        </div>
+        <div class="mt-4">
+          <button class="btn btn-success" onclick="addMedicationRequest()">
+            <i class="bi bi-plus-lg"></i> Agregar Solicitud
+          </button>
+        </div>
+      </div>
+
+      <div class="search-container">
+        <div class="row g-2">
+          <div class="col-md-8">
+            <div class="position-relative">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-control" id="requestFilterInput" placeholder="Buscar solicitudes..." oninput="renderMedicationRequests()" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <select class="form-select" id="requestSortSelect" onchange="renderMedicationRequests()">
+              <option value="">Ordenar por...</option>
+              <option value="priority">Prioridad</option>
+              <option value="date">Fecha de solicitud</option>
+              <option value="name">Nombre</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="medicationRequestsList"></div>
+    </div>
   </div>
-  -->
 
   <!-- Loading Overlay -->
   <div class="loading-overlay" id="loadingOverlay">
@@ -1705,9 +1849,284 @@
 
   <script>
     const STORAGE_KEY = "medications";
+    const REQUESTS_STORAGE_KEY = "medicationRequests";
     let editingIndex = -1;
     let searchTimeout = null;
     let isFormCollapsed = false;
+
+    // Navigation Functions
+    function showMainMenu() {
+      document.getElementById('mainMenuScreen').style.display = 'flex';
+      document.getElementById('medicationManagerScreen').style.display = 'none';
+      document.getElementById('medicationRequestsScreen').style.display = 'none';
+    }
+
+    function showMedicationManager() {
+      document.getElementById('mainMenuScreen').style.display = 'none';
+      document.getElementById('medicationManagerScreen').style.display = 'block';
+      document.getElementById('medicationRequestsScreen').style.display = 'none';
+      renderMedications();
+    }
+
+    function showMedicationRequests() {
+      document.getElementById('mainMenuScreen').style.display = 'none';
+      document.getElementById('medicationManagerScreen').style.display = 'none';
+      document.getElementById('medicationRequestsScreen').style.display = 'block';
+      renderMedicationRequests();
+    }
+
+    function logout() {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('mainMenuScreen').style.display = 'none';
+      document.getElementById('medicationManagerScreen').style.display = 'none';
+      document.getElementById('medicationRequestsScreen').style.display = 'none';
+      document.getElementById('passwordInput').value = '';
+      showToast("Sesión cerrada", "Ha cerrado sesión correctamente", "info");
+    }
+
+    // Medication Requests Functions
+    function loadMedicationRequests() {
+      const data = localStorage.getItem(REQUESTS_STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveMedicationRequests(requests) {
+      localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(requests));
+    }
+
+    function addMedicationRequest() {
+      const name = document.getElementById("requestName").value.trim();
+      const dose = document.getElementById("requestDose").value.trim();
+      const form = document.getElementById("requestForm").value;
+      const quantity = document.getElementById("requestQuantity").value.trim();
+      const priority = document.getElementById("requestPriority").value;
+      const notes = document.getElementById("requestNotes").value.trim();
+
+      if (!name) {
+        showToast("Error", "El nombre del medicamento es obligatorio", "danger");
+        return;
+      }
+
+      const requests = loadMedicationRequests();
+      const creationDate = new Date().toISOString().split('T')[0];
+      requests.push({ 
+        name, 
+        dose, 
+        form, 
+        quantity, 
+        priority, 
+        notes, 
+        creationDate,
+        status: 'Pendiente'
+      });
+      saveMedicationRequests(requests);
+      
+      // Clear form
+      document.getElementById("requestName").value = "";
+      document.getElementById("requestDose").value = "";
+      document.getElementById("requestForm").value = "";
+      document.getElementById("requestQuantity").value = "";
+      document.getElementById("requestPriority").value = "Media";
+      document.getElementById("requestNotes").value = "";
+      
+      renderMedicationRequests();
+      showToast("Solicitud agregada", `Solicitud para "${name}" agregada correctamente`, "success");
+    }
+
+    function deleteMedicationRequest(index) {
+      if (confirm('¿Está seguro de que desea eliminar esta solicitud?')) {
+        const requests = loadMedicationRequests();
+        const deletedRequest = requests[index];
+        requests.splice(index, 1);
+        saveMedicationRequests(requests);
+        renderMedicationRequests();
+        showToast("Eliminado", `Solicitud "${deletedRequest.name}" eliminada`, "success");
+      }
+    }
+
+    function markRequestAsCompleted(index) {
+      const requests = loadMedicationRequests();
+      requests[index].status = 'Completada';
+      requests[index].completedDate = new Date().toISOString().split('T')[0];
+      saveMedicationRequests(requests);
+      renderMedicationRequests();
+      showToast("Completada", `Solicitud "${requests[index].name}" marcada como completada`, "success");
+    }
+
+    function renderMedicationRequests() {
+      const list = document.getElementById("medicationRequestsList");
+      const filter = document.getElementById("requestFilterInput").value.toLowerCase();
+      const sortBy = document.getElementById("requestSortSelect").value;
+      
+      let requests = loadMedicationRequests().filter(r => 
+        r.name.toLowerCase().includes(filter) ||
+        r.dose.toLowerCase().includes(filter) ||
+        (r.form && r.form.toLowerCase().includes(filter)) ||
+        r.notes.toLowerCase().includes(filter)
+      );
+      
+      // Apply sorting
+      if (sortBy) {
+        requests = sortRequests(requests, sortBy);
+      }
+      
+      if (requests.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <i class="bi bi-list-check"></i>
+            <h4>No hay solicitudes</h4>
+            <p>${filter ? 'No se encontraron solicitudes con ese filtro.' : 'Agregue su primera solicitud usando el formulario de arriba.'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = "";
+
+      // Group by priority
+      const priorityOrder = ['Urgente', 'Alta', 'Media', 'Baja'];
+      const grouped = {};
+      
+      requests.forEach((request, index) => {
+        const priority = request.priority || 'Media';
+        if (!grouped[priority]) grouped[priority] = [];
+        grouped[priority].push({ ...request, index });
+      });
+
+      priorityOrder.forEach(priority => {
+        if (grouped[priority] && grouped[priority].length > 0) {
+          const group = document.createElement("div");
+          group.className = "med-group";
+          
+          const title = document.createElement("div");
+          title.className = "group-title";
+          
+          // Set priority-specific styling
+          const priorityClass = priority.toLowerCase().replace(' ', '-');
+          title.className = `group-title ${priorityClass}`;
+          
+          const priorityIcon = getPriorityIcon(priority);
+          const priorityColor = getPriorityColor(priority);
+          
+          title.innerHTML = `
+            <i class="bi ${priorityIcon}" style="color: ${priorityColor}"></i>
+            <span>${priority} (${grouped[priority].length})</span>
+          `;
+          group.appendChild(title);
+
+          grouped[priority].forEach(request => {
+            const card = document.createElement("div");
+            card.className = `med-card ${priorityClass}`;
+            
+            const statusIcon = request.status === 'Completada' ? 'bi-check-circle-fill' : 'bi-clock';
+            const statusColor = request.status === 'Completada' ? '#28a745' : '#ffc107';
+            
+            card.innerHTML = `
+              <div class="action-buttons">
+                ${request.status !== 'Completada' ? 
+                  `<button class="btn-icon btn-edit" onclick="markRequestAsCompleted(${request.index})" title="Marcar como completada">
+                    <i class="bi bi-check-lg"></i>
+                  </button>` : ''
+                }
+                <button class="btn-icon btn-delete" onclick="deleteMedicationRequest(${request.index})" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+              <div class="med-header">
+                <div class="med-name">
+                  <i class="bi bi-list-check"></i>
+                  <span>${request.name}</span>
+                  <div class="med-dose">${request.priority}</div>
+                </div>
+              </div>
+              <div class="med-info">
+                ${request.dose ? `
+                  <div class="med-info-item">
+                    <i class="bi bi-capsule"></i>
+                    <span>Dosis: ${request.dose}</span>
+                  </div>
+                ` : ''}
+                ${request.form ? `
+                  <div class="med-info-item">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Forma: ${request.form}</span>
+                  </div>
+                ` : ''}
+                ${request.quantity ? `
+                  <div class="med-info-item">
+                    <i class="bi bi-hash"></i>
+                    <span>Cantidad: ${request.quantity}</span>
+                  </div>
+                ` : ''}
+                <div class="med-info-item">
+                  <i class="bi bi-calendar-plus"></i>
+                  <span>Solicitado: ${new Date(request.creationDate).toLocaleDateString('es-ES')}</span>
+                </div>
+                <div class="med-info-item">
+                  <i class="bi bi-${statusIcon}" style="color: ${statusColor}"></i>
+                  <span>${request.status}</span>
+                </div>
+                ${request.completedDate ? `
+                  <div class="med-info-item">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Completado: ${new Date(request.completedDate).toLocaleDateString('es-ES')}</span>
+                  </div>
+                ` : ''}
+              </div>
+              ${request.notes ? `
+                <div class="alert alert-info mt-2">
+                  <i class="bi bi-info-circle"></i> ${request.notes}
+                </div>
+              ` : ''}
+              ${request.status === 'Completada' ? `
+                <div class="alert alert-success mt-2">
+                  <i class="bi bi-check-circle"></i> Solicitud completada
+                </div>
+              ` : ''}
+            `;
+            group.appendChild(card);
+          });
+
+          list.appendChild(group);
+        }
+      });
+    }
+
+    function getPriorityIcon(priority) {
+      const iconMap = {
+        'Urgente': 'bi-exclamation-triangle-fill',
+        'Alta': 'bi-exclamation-circle-fill',
+        'Media': 'bi-info-circle-fill',
+        'Baja': 'bi-check-circle-fill'
+      };
+      return iconMap[priority] || 'bi-info-circle-fill';
+    }
+
+    function getPriorityColor(priority) {
+      const colorMap = {
+        'Urgente': '#dc3545',
+        'Alta': '#fd7e14',
+        'Media': '#ffc107',
+        'Baja': '#28a745'
+      };
+      return colorMap[priority] || '#6c757d';
+    }
+
+    function sortRequests(requests, sortBy) {
+      return [...requests].sort((a, b) => {
+        switch (sortBy) {
+          case 'priority':
+            const priorityOrder = { 'Urgente': 0, 'Alta': 1, 'Media': 2, 'Baja': 3 };
+            return priorityOrder[a.priority] - priorityOrder[b.priority];
+          case 'date':
+            return new Date(b.creationDate) - new Date(a.creationDate);
+          case 'name':
+            return a.name.localeCompare(b.name);
+          default:
+            return 0;
+        }
+      });
+    }
 
     // Enhanced form validation
     function validateForm() {
@@ -1901,9 +2320,10 @@
         // Add fade-out animation class
         loginScreen.classList.add('fade-out');
         
-        // Wait for animation to complete, then hide the element
+        // Wait for animation to complete, then hide the element and show main menu
         setTimeout(() => {
           loginScreen.style.display = "none";
+          showMainMenu();
           showToast("¡Bienvenido!", "Acceso exitoso al sistema", "success");
         }, 600); // Match the CSS transition duration
       } else {
@@ -2867,7 +3287,7 @@
 
     // Initialize the application
     document.addEventListener('DOMContentLoaded', function() {
-      renderMedications();
+      // Don't render medications automatically - wait for user to choose from menu
       
       // Setup real-time validation
       setupRealTimeValidation();
@@ -2891,6 +3311,19 @@
             }
           }
         });
+      });
+      
+      // Add enter key support for request form fields
+      const requestFormInputs = ['requestName', 'requestDose', 'requestForm', 'requestQuantity', 'requestPriority', 'requestNotes'];
+      requestFormInputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              addMedicationRequest();
+            }
+          });
+        }
       });
       
       // Set minimum date for expiry date input
