@@ -1968,7 +1968,7 @@
         return;
       }
 
-      const headers = ['Nombre', 'Dosis', 'Fecha de Vencimiento', 'Cantidad', 'Forma Farmacéutica', 'Días Restantes'];
+      const headers = ['Nombre', 'Dosis', 'Fecha de Vencimiento', 'Cantidad', 'Forma Farmacéutica', 'Fecha de Agregado', 'Días Restantes'];
       const csvContent = [
         headers.join(','),
         ...meds.map(med => [
@@ -1977,6 +1977,7 @@
           `"${new Date(med.expiryDate).toLocaleDateString('es-ES')}"`,
           `"${med.quantity}"`,
           `"${med.form || ''}"`,
+          `"${med.creationDate ? new Date(med.creationDate).toLocaleDateString('es-ES') : 'N/A'}"`,
           `"${daysUntil(med.expiryDate)}"`
         ].join(','))
       ].join('\n');
