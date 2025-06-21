@@ -1249,6 +1249,150 @@
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
+    
+    /* Voice Command Button Styling */
+    #voiceQuickAction {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      z-index: 1000;
+    }
+    
+    #voiceQuickAction .quick-action-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: white;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse-voice 2s infinite;
+    }
+    
+    #voiceQuickAction .quick-action-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      animation: none;
+    }
+    
+    @keyframes pulse-voice {
+      0% { box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3); }
+      50% { box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6); }
+      100% { box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3); }
+    }
+    
+    /* Voice Modal Styling */
+    #voiceModal {
+      display: none;
+      position: fixed;
+      z-index: 10001;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.85);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    
+    #voiceModal > div {
+      background: #222;
+      padding: 1.5rem;
+      border-radius: 15px;
+      max-width: 90vw;
+      text-align: center;
+      min-width: 300px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border: 1px solid #444;
+    }
+    
+    #voiceModal h5 {
+      color: #b6ff00;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    
+    #voiceModal p {
+      color: #ccc;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    
+    #voiceStatus {
+      color: #fff;
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #333;
+      border: 1px solid #555;
+      transition: all 0.3s ease;
+    }
+    
+    #voiceStatus i {
+      margin-right: 0.5rem;
+    }
+    
+    #voicePreview {
+      display: none;
+      color: #fff;
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #444;
+      text-align: left;
+      border: 1px solid #666;
+    }
+    
+    #voicePreview h6 {
+      color: #b6ff00;
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+    
+    #previewContent div {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem 0;
+    }
+    
+    #previewContent strong {
+      color: #b6ff00;
+      margin-right: 0.5rem;
+    }
+    
+    /* Mobile adjustments for voice features */
+    @media (max-width: 767px) {
+      #voiceQuickAction {
+        bottom: 1rem;
+        left: 1rem;
+      }
+      
+      #voiceQuickAction .quick-action-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+      }
+      
+      #voiceModal > div {
+        margin: 1rem;
+        padding: 1rem;
+        min-width: 280px;
+      }
+      
+      #voiceModal h5 {
+        font-size: 1.1rem;
+      }
+      
+      #voiceModal p {
+        font-size: 0.85rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1416,6 +1560,50 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- Voice Command Modal -->
+  <div id="voiceModal" style="display:none; position:fixed; z-index:10001; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; flex-direction:column;">
+    <div style="background:#222; padding:1.5rem; border-radius:15px; max-width:90vw; text-align:center; min-width:300px;">
+      <h5 style="color:#b6ff00; margin-bottom:1rem;">
+        <i class="bi bi-mic"></i> Comando de Voz
+      </h5>
+      <p style="color:#ccc; margin-bottom:1rem; font-size:0.9rem;">
+        Diga: "Agregar [medicamento] [dosis] [forma] [cantidad] vence [fecha]"<br>
+        Ejemplo: "Agregar Paracetamol 500 miligramos comprimidos 20 unidades vence 15 de diciembre 2024"
+      </p>
+      
+      <div id="voiceStatus" style="color:#fff; margin:1rem 0; padding:1rem; border-radius:8px; background:#333;">
+        <i class="bi bi-mic-mute"></i> Presione el botón para comenzar
+      </div>
+      
+      <div id="voicePreview" style="display:none; color:#fff; margin:1rem 0; padding:1rem; border-radius:8px; background:#444; text-align:left;">
+        <h6 style="color:#b6ff00;">Información detectada:</h6>
+        <div id="previewContent"></div>
+      </div>
+      
+      <div class="d-flex justify-content-center gap-2 mt-3">
+        <button class="btn btn-success" id="voiceStartBtn" onclick="startVoiceRecognition()">
+          <i class="bi bi-mic"></i> Comenzar
+        </button>
+        <button class="btn btn-info" id="voiceConfirmBtn" onclick="confirmVoiceEntry()" style="display:none;">
+          <i class="bi bi-check-lg"></i> Confirmar
+        </button>
+        <button class="btn btn-warning" onclick="retryVoiceRecognition()">
+          <i class="bi bi-arrow-clockwise"></i> Reintentar
+        </button>
+        <button class="btn btn-danger" onclick="closeVoiceModal()">
+          <i class="bi bi-x-lg"></i> Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice Command Button -->
+  <div class="quick-actions" id="voiceQuickAction" style="position:fixed; bottom:2rem; left:2rem; z-index:1000;">
+    <button class="quick-action-btn" onclick="openVoiceModal()" title="Comando de voz" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+      <i class="bi bi-mic"></i>
+    </button>
   </div>
 
   <script>
@@ -2418,6 +2606,342 @@
         default:
           return 0;
       }
+    }
+
+    // Voice Recognition Variables
+    let recognition = null;
+    let isListening = false;
+    let parsedVoiceData = null;
+
+    // Voice Command Functions
+    function openVoiceModal() {
+      document.getElementById('voiceModal').style.display = 'flex';
+      resetVoiceModal();
+    }
+
+    function closeVoiceModal() {
+      document.getElementById('voiceModal').style.display = 'none';
+      stopVoiceRecognition();
+      resetVoiceModal();
+    }
+
+    function resetVoiceModal() {
+      document.getElementById('voiceStatus').innerHTML = '<i class="bi bi-mic-mute"></i> Presione el botón para comenzar';
+      document.getElementById('voiceStatus').style.background = '#333';
+      document.getElementById('voicePreview').style.display = 'none';
+      document.getElementById('voiceStartBtn').style.display = 'inline-flex';
+      document.getElementById('voiceConfirmBtn').style.display = 'none';
+      parsedVoiceData = null;
+      isListening = false;
+    }
+
+    function startVoiceRecognition() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showToast('Error', 'El reconocimiento de voz no está disponible en este navegador', 'danger');
+        return;
+      }
+
+      try {
+        // Initialize speech recognition
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'es-ES';
+        recognition.maxAlternatives = 1;
+
+        // Update UI
+        document.getElementById('voiceStatus').innerHTML = '<i class="bi bi-mic"></i> Escuchando... Hable ahora';
+        document.getElementById('voiceStatus').style.background = '#e74c3c';
+        document.getElementById('voiceStartBtn').style.display = 'none';
+        isListening = true;
+
+        // Event handlers
+        recognition.onstart = function() {
+          console.log('Voice recognition started');
+        };
+
+        recognition.onresult = function(event) {
+          const transcript = event.results[0][0].transcript.toLowerCase();
+          console.log('Voice transcript:', transcript);
+          
+          // Parse the voice input
+          parsedVoiceData = parseVoiceInput(transcript);
+          
+          if (parsedVoiceData) {
+            showVoicePreview(parsedVoiceData);
+          } else {
+            document.getElementById('voiceStatus').innerHTML = '<i class="bi bi-exclamation-triangle"></i> No se pudo entender. Intente de nuevo';
+            document.getElementById('voiceStatus').style.background = '#f39c12';
+          }
+        };
+
+        recognition.onerror = function(event) {
+          console.error('Voice recognition error:', event.error);
+          let errorMessage = 'Error en el reconocimiento de voz';
+          
+          switch(event.error) {
+            case 'no-speech':
+              errorMessage = 'No se detectó voz. Hable más fuerte';
+              break;
+            case 'audio-capture':
+              errorMessage = 'No se pudo acceder al micrófono';
+              break;
+            case 'not-allowed':
+              errorMessage = 'Permiso denegado para el micrófono';
+              break;
+            case 'network':
+              errorMessage = 'Error de red';
+              break;
+          }
+          
+          document.getElementById('voiceStatus').innerHTML = `<i class="bi bi-exclamation-triangle"></i> ${errorMessage}`;
+          document.getElementById('voiceStatus').style.background = '#e74c3c';
+        };
+
+        recognition.onend = function() {
+          isListening = false;
+          if (!parsedVoiceData) {
+            document.getElementById('voiceStartBtn').style.display = 'inline-flex';
+          }
+        };
+
+        // Start recognition
+        recognition.start();
+
+      } catch (error) {
+        console.error('Error starting voice recognition:', error);
+        showToast('Error', 'No se pudo iniciar el reconocimiento de voz', 'danger');
+      }
+    }
+
+    function stopVoiceRecognition() {
+      if (recognition && isListening) {
+        recognition.stop();
+        isListening = false;
+      }
+    }
+
+    function retryVoiceRecognition() {
+      resetVoiceModal();
+      startVoiceRecognition();
+    }
+
+    function parseVoiceInput(transcript) {
+      console.log('Parsing voice input:', transcript);
+      
+      // Remove common filler words and normalize
+      const cleanTranscript = transcript
+        .replace(/\b(por favor|eh|um|ah|bueno|entonces)\b/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      console.log('Clean transcript:', cleanTranscript);
+      
+      // Pattern for "Agregar [medicamento] [dosis] [forma] [cantidad] vence [fecha]"
+      const pattern = /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)\s+vence\s+(.+)/i;
+      
+      const match = cleanTranscript.match(pattern);
+      
+      if (match) {
+        const [, medication, dose, unit, form, quantity, quantityUnit, dateText] = match;
+        
+        // Parse the date
+        const parsedDate = parseSpanishDate(dateText);
+        
+        if (parsedDate) {
+          return {
+            name: medication.trim().replace(/\b\w/g, l => l.toUpperCase()),
+            dose: `${dose} ${unit}`,
+            form: form.replace(/\b\w/g, l => l.toUpperCase()),
+            quantity: quantity,
+            expiryDate: parsedDate
+          };
+        }
+      }
+      
+      // Alternative patterns for different word orders
+      const alternativePatterns = [
+        // "Agregar [medicamento] [dosis] [forma] vence [fecha] [cantidad]"
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+vence\s+(.+?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)/i,
+        
+        // "Agregar [medicamento] [forma] [dosis] [cantidad] vence [fecha]"
+        /agregar\s+(.+?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)\s+vence\s+(.+)/i,
+        
+        // "Agregar [medicamento] [dosis] [forma] [cantidad] para [fecha]"
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)\s+para\s+(.+)/i,
+        
+        // "Agregar [medicamento] [cantidad] [dosis] [forma] vence [fecha]"
+        /agregar\s+(.+?)\s+(\d+)\s*(unidades?|pastillas?|comprimidos?|cápsulas?|ampollas?|frascos?|tubos?|unidad|pastilla|comprimido|cápsula|ampolla|frasco|tubo)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+vence\s+(.+)/i
+      ];
+      
+      for (const altPattern of alternativePatterns) {
+        const altMatch = cleanTranscript.match(altPattern);
+        if (altMatch) {
+          const [, medication, dose, unit, form, quantity, quantityUnit, dateText] = altMatch;
+          const parsedDate = parseSpanishDate(dateText);
+          
+          if (parsedDate) {
+            return {
+              name: medication.trim().replace(/\b\w/g, l => l.toUpperCase()),
+              dose: `${dose} ${unit}`,
+              form: form.replace(/\b\w/g, l => l.toUpperCase()),
+              quantity: quantity,
+              expiryDate: parsedDate
+            };
+          }
+        }
+      }
+      
+      // Fallback patterns without quantity (default to 1)
+      const fallbackPatterns = [
+        // "Agregar [medicamento] [dosis] [forma] vence [fecha]"
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+vence\s+(.+)/i,
+        
+        // "Agregar [medicamento] [dosis] vence [fecha] [forma]"
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+vence\s+(.+?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)/i,
+        
+        // "Agregar [medicamento] [forma] [dosis] vence [fecha]"
+        /agregar\s+(.+?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+vence\s+(.+)/i,
+        
+        // "Agregar [medicamento] [dosis] [forma] para [fecha]"
+        /agregar\s+(.+?)\s+(\d+)\s*(mg|miligramos?|g|gramos?|ml|mililitros?|mcg|microgramos?)\s+(comprimidos?|cápsulas?|ampollas?|jarabes?|inyecciones?|cremas?|pomadas?|tabletas?)\s+para\s+(.+)/i
+      ];
+      
+      for (const fallbackPattern of fallbackPatterns) {
+        const fallbackMatch = cleanTranscript.match(fallbackPattern);
+        if (fallbackMatch) {
+          const [, medication, dose, unit, form, dateText] = fallbackMatch;
+          const parsedDate = parseSpanishDate(dateText);
+          
+          if (parsedDate) {
+            return {
+              name: medication.trim().replace(/\b\w/g, l => l.toUpperCase()),
+              dose: `${dose} ${unit}`,
+              form: form.replace(/\b\w/g, l => l.toUpperCase()),
+              quantity: '1', // Default quantity
+              expiryDate: parsedDate
+            };
+          }
+        }
+      }
+      
+      return null;
+    }
+
+    function parseSpanishDate(dateText) {
+      console.log('Parsing date:', dateText);
+      
+      // Remove common words
+      const cleanDate = dateText
+        .replace(/\b(del|de|el|la|año|años?)\b/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      console.log('Clean date:', cleanDate);
+      
+      // Spanish month names
+      const months = {
+        'enero': 0, 'febrero': 1, 'marzo': 2, 'abril': 3, 'mayo': 4, 'junio': 5,
+        'julio': 6, 'agosto': 7, 'septiembre': 8, 'octubre': 9, 'noviembre': 10, 'diciembre': 11,
+        'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
+        'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
+      };
+      
+      // Patterns for different date formats
+      const datePatterns = [
+        // "15 de diciembre 2024" or "15 diciembre 2024"
+        /(\d{1,2})\s+(?:de\s+)?(\w+)\s+(\d{4})/i,
+        
+        // "diciembre 15 2024"
+        /(\w+)\s+(\d{1,2})\s+(\d{4})/i,
+        
+        // "15/12/2024" or "15-12-2024"
+        /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/,
+        
+        // "2024-12-15"
+        /(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/
+      ];
+      
+      for (const pattern of datePatterns) {
+        const match = cleanDate.match(pattern);
+        if (match) {
+          let day, month, year;
+          
+          if (pattern.source.includes('\\w+')) {
+            // Text month format
+            if (match[1].match(/\d+/)) {
+              // "15 de diciembre 2024"
+              day = parseInt(match[1]);
+              month = months[match[2].toLowerCase()];
+              year = parseInt(match[3]);
+            } else {
+              // "diciembre 15 2024"
+              month = months[match[1].toLowerCase()];
+              day = parseInt(match[2]);
+              year = parseInt(match[3]);
+            }
+          } else {
+            // Numeric format
+            if (match[1].length === 4) {
+              // "2024-12-15"
+              year = parseInt(match[1]);
+              month = parseInt(match[2]) - 1;
+              day = parseInt(match[3]);
+            } else {
+              // "15/12/2024"
+              day = parseInt(match[1]);
+              month = parseInt(match[2]) - 1;
+              year = parseInt(match[3]);
+            }
+          }
+          
+          if (month !== undefined && day && year) {
+            const date = new Date(year, month, day);
+            if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+              return date.toISOString().split('T')[0];
+            }
+          }
+        }
+      }
+      
+      return null;
+    }
+
+    function showVoicePreview(data) {
+      const previewContent = document.getElementById('previewContent');
+      previewContent.innerHTML = `
+        <div><strong>Medicamento:</strong> ${data.name}</div>
+        <div><strong>Dosis:</strong> ${data.dose}</div>
+        <div><strong>Forma:</strong> ${data.form}</div>
+        <div><strong>Vence:</strong> ${new Date(data.expiryDate).toLocaleDateString('es-ES')}</div>
+        <div><strong>Cantidad:</strong> ${data.quantity}</div>
+      `;
+      
+      document.getElementById('voicePreview').style.display = 'block';
+      document.getElementById('voiceConfirmBtn').style.display = 'inline-flex';
+      document.getElementById('voiceStatus').innerHTML = '<i class="bi bi-check-circle"></i> Información detectada correctamente';
+      document.getElementById('voiceStatus').style.background = '#27ae60';
+    }
+
+    function confirmVoiceEntry() {
+      if (!parsedVoiceData) {
+        showToast('Error', 'No hay datos para confirmar', 'danger');
+        return;
+      }
+      
+      // Fill the form with voice data
+      document.getElementById('name').value = parsedVoiceData.name;
+      document.getElementById('dose').value = parsedVoiceData.dose;
+      document.getElementById('expiryDate').value = parsedVoiceData.expiryDate;
+      document.getElementById('quantity').value = parsedVoiceData.quantity;
+      document.getElementById('form').value = parsedVoiceData.form;
+      
+      // Add the medication
+      addMedication();
+      
+      // Close modal and show success message
+      closeVoiceModal();
+      showToast('Agregado por voz', `Medicamento "${parsedVoiceData.name}" agregado correctamente`, 'success');
     }
   </script>
 </body>
