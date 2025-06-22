@@ -1550,6 +1550,7 @@
   <div id="loginScreen">
     <div class="login-card">
       <h2 class="mb-4"><i class="bi bi-shield-lock"></i> Acceso al sistema</h2>
+      <input type="text" class="form-control" id="usernameInput" placeholder="Nombre de usuario" />
       <input type="password" class="form-control" id="passwordInput" placeholder="Ingrese la contraseña" />
       <button class="btn btn-primary mt-3" onclick="checkPassword()">
         <i class="bi bi-box-arrow-in-right"></i> Acceder
@@ -1968,6 +1969,22 @@
     let isFormCollapsed = false;
     let prescriptionPhotoData = null;
     let prescriptionImageStream = null;
+    let editingPrescriptionIndex = -1;
+    let currentUser = null;
+
+    // Profile Management System
+    const PROFILES = {
+      'Farmacia': {
+        password: '123',
+        access: ['medicationManager', 'medicationRequests', 'prescriptionArchive'],
+        name: 'Farmacia'
+      },
+      'Deposito': {
+        password: '456',
+        access: ['medicationManager', 'medicationRequests'],
+        name: 'Deposito'
+      }
+    };
 
     // Navigation Functions
     function showMainMenu() {
@@ -1975,9 +1992,65 @@
       document.getElementById('medicationManagerScreen').style.display = 'none';
       document.getElementById('medicationRequestsScreen').style.display = 'none';
       document.getElementById('prescriptionArchiveScreen').style.display = 'none';
+      
+      // Update main menu based on user access
+      updateMainMenuAccess();
+    }
+
+    function updateMainMenuAccess() {
+      const mainMenuContainer = document.querySelector('#mainMenuScreen .d-grid');
+      
+      if (!currentUser) return;
+      
+      let menuHTML = '';
+      
+      // Always show medication manager if user has access
+      if (currentUser.access.includes('medicationManager')) {
+        menuHTML += `
+          <button class="btn btn-primary btn-lg" onclick="showMedicationManager()">
+            <i class="bi bi-plus-circle"></i> Gestionar Medicamentos
+          </button>
+        `;
+      }
+      
+      // Show medication requests if user has access
+      if (currentUser.access.includes('medicationRequests')) {
+        menuHTML += `
+          <button class="btn btn-success btn-lg" onclick="showMedicationRequests()">
+            <i class="bi bi-list-check"></i> Solicitudes de Medicamentos
+          </button>
+        `;
+      }
+      
+      // Show prescription archive if user has access
+      if (currentUser.access.includes('prescriptionArchive')) {
+        menuHTML += `
+          <button class="btn btn-info btn-lg" onclick="showPrescriptionArchive()">
+            <i class="bi bi-file-earmark-medical"></i> Archivo de Recetas
+          </button>
+        `;
+      }
+      
+      // Always show logout button
+      menuHTML += `
+        <button class="btn btn-secondary" onclick="logout()">
+          <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+        </button>
+      `;
+      
+      mainMenuContainer.innerHTML = menuHTML;
+      
+      // Update welcome message to show current user
+      const welcomeMessage = document.querySelector('#mainMenuScreen h2');
+      welcomeMessage.innerHTML = `<i class="bi bi-capsule"></i> Gestor de Medicamentos - ${currentUser.name}`;
     }
 
     function showMedicationManager() {
+      if (!currentUser || !currentUser.access.includes('medicationManager')) {
+        showToast("Acceso denegado", "No tiene permisos para acceder a esta sección", "danger");
+        return;
+      }
+      
       document.getElementById('mainMenuScreen').style.display = 'none';
       document.getElementById('medicationManagerScreen').style.display = 'block';
       document.getElementById('medicationRequestsScreen').style.display = 'none';
@@ -1986,6 +2059,11 @@
     }
 
     function showMedicationRequests() {
+      if (!currentUser || !currentUser.access.includes('medicationRequests')) {
+        showToast("Acceso denegado", "No tiene permisos para acceder a esta sección", "danger");
+        return;
+      }
+      
       document.getElementById('mainMenuScreen').style.display = 'none';
       document.getElementById('medicationManagerScreen').style.display = 'none';
       document.getElementById('medicationRequestsScreen').style.display = 'block';
@@ -1994,6 +2072,11 @@
     }
 
     function showPrescriptionArchive() {
+      if (!currentUser || !currentUser.access.includes('prescriptionArchive')) {
+        showToast("Acceso denegado", "No tiene permisos para acceder a esta sección", "danger");
+        return;
+      }
+      
       document.getElementById('mainMenuScreen').style.display = 'none';
       document.getElementById('medicationManagerScreen').style.display = 'none';
       document.getElementById('medicationRequestsScreen').style.display = 'none';
@@ -2002,12 +2085,24 @@
     }
 
     function logout() {
-      document.getElementById('loginScreen').style.display = 'flex';
+      // Reset login screen state
+      const loginScreen = document.getElementById('loginScreen');
+      loginScreen.classList.remove('fade-out');
+      loginScreen.style.display = 'flex';
+      
+      // Hide all other screens
       document.getElementById('mainMenuScreen').style.display = 'none';
       document.getElementById('medicationManagerScreen').style.display = 'none';
       document.getElementById('medicationRequestsScreen').style.display = 'none';
       document.getElementById('prescriptionArchiveScreen').style.display = 'none';
+      
+      // Clear form fields
+      document.getElementById('usernameInput').value = '';
       document.getElementById('passwordInput').value = '';
+      
+      // Clear current user
+      currentUser = null;
+      
       showToast("Sesión cerrada", "Ha cerrado sesión correctamente", "info");
     }
 
@@ -2440,8 +2535,18 @@
     }
 
     function checkPassword() {
-      const input = document.getElementById("passwordInput").value;
-      if (input === "123") {
+      const username = document.getElementById("usernameInput").value.trim();
+      const password = document.getElementById("passwordInput").value;
+      
+      if (!username || !password) {
+        showToast("Error", "Por favor complete todos los campos", "danger");
+        return;
+      }
+      
+      const profile = PROFILES[username];
+      
+      if (profile && profile.password === password) {
+        currentUser = profile;
         const loginScreen = document.getElementById("loginScreen");
         
         // Add fade-out animation class
@@ -2451,10 +2556,10 @@
         setTimeout(() => {
           loginScreen.style.display = "none";
           showMainMenu();
-          showToast("¡Bienvenido!", "Acceso exitoso al sistema", "success");
+          showToast("¡Bienvenido!", `Acceso exitoso al sistema - ${profile.name}`, "success");
         }, 600); // Match the CSS transition duration
       } else {
-        showToast("Error", "Contraseña incorrecta", "danger");
+        showToast("Error", "Usuario o contraseña incorrectos", "danger");
         document.getElementById("passwordInput").value = "";
       }
     }
@@ -3426,6 +3531,13 @@
         }
       });
       
+      // Add enter key support for username
+      document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          checkPassword();
+        }
+      });
+      
       // Add enter key support for form fields
       const formInputs = ['name', 'dose', 'expiryDate', 'quantity', 'form'];
       formInputs.forEach(id => {
@@ -3989,6 +4101,7 @@
       document.getElementById("prescriptionPatient").value = "";
       document.getElementById("prescriptionNotes").value = "";
       removePrescriptionPhoto();
+      editingPrescriptionIndex = -1; // Reset editing mode
       
       renderPrescriptions();
       showToast("Receta agregada", `Receta para "${name}" agregada correctamente`, "success");
@@ -4042,6 +4155,11 @@
         
         card.innerHTML = `
           <div class="action-buttons">
+            ${!prescription.photo ? `
+              <button class="btn-icon btn-edit" onclick="addPhotoToPrescription(${index})" title="Agregar foto">
+                <i class="bi bi-camera"></i>
+              </button>
+            ` : ''}
             <button class="btn-icon btn-delete" onclick="deletePrescription(${index})" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
@@ -4121,6 +4239,7 @@
 
     // Prescription Photo Functions
     function capturePrescriptionPhoto() {
+      editingPrescriptionIndex = -1; // Reset to new prescription mode
       document.getElementById('prescriptionPhotoModal').style.display = 'flex';
       openPrescriptionCamera();
     }
@@ -4186,14 +4305,19 @@
         // Convert to base64
         prescriptionPhotoData = canvas.toDataURL('image/jpeg', 0.8);
         
-        // Show preview
-        document.getElementById('prescriptionPhotoImage').src = prescriptionPhotoData;
-        document.getElementById('prescriptionPhotoPreview').style.display = 'block';
-        document.getElementById('prescriptionPhotoStatus').textContent = 'Foto tomada';
-        document.getElementById('prescriptionPhotoStatus').className = 'text-success';
-        
         closePrescriptionPhotoCapture();
-        showToast('Foto capturada', 'Foto de la receta capturada correctamente', 'success');
+        
+        if (editingPrescriptionIndex === -1) {
+          // New prescription mode - show preview in form
+          document.getElementById('prescriptionPhotoImage').src = prescriptionPhotoData;
+          document.getElementById('prescriptionPhotoPreview').style.display = 'block';
+          document.getElementById('prescriptionPhotoStatus').textContent = 'Foto tomada';
+          document.getElementById('prescriptionPhotoStatus').className = 'text-success';
+          showToast('Foto capturada', 'Foto de la receta capturada correctamente', 'success');
+        } else {
+          // Editing existing prescription - update directly
+          updatePrescriptionWithPhoto();
+        }
       } catch (e) {
         console.error('Capture error:', e);
         showToast('Error', 'No se pudo capturar la imagen: ' + e.message, 'danger');
@@ -4208,6 +4332,7 @@
 
     function removePrescriptionPhoto() {
       prescriptionPhotoData = null;
+      editingPrescriptionIndex = -1; // Reset editing mode
       document.getElementById('prescriptionPhotoPreview').style.display = 'none';
       document.getElementById('prescriptionPhotoStatus').textContent = 'No se ha tomado foto';
       document.getElementById('prescriptionPhotoStatus').className = 'text-muted';
@@ -4257,6 +4382,30 @@
           modal.remove();
         }
       });
+    }
+
+    function addPhotoToPrescription(index) {
+      editingPrescriptionIndex = index;
+      document.getElementById('prescriptionPhotoModal').style.display = 'flex';
+      openPrescriptionCamera();
+    }
+
+    function updatePrescriptionWithPhoto() {
+      if (editingPrescriptionIndex === -1 || !prescriptionPhotoData) {
+        showToast("Error", "No hay foto para agregar", "danger");
+        return;
+      }
+
+      const prescriptions = loadPrescriptions();
+      prescriptions[editingPrescriptionIndex].photo = prescriptionPhotoData;
+      savePrescriptions(prescriptions);
+      
+      // Reset
+      editingPrescriptionIndex = -1;
+      prescriptionPhotoData = null;
+      
+      renderPrescriptions();
+      showToast("Foto agregada", "Foto agregada a la receta correctamente", "success");
     }
   </script>
 </body>
