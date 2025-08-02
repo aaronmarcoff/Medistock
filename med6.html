@@ -1547,6 +1547,197 @@
   </style>
 </head>
 <body>
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDJ9V66g_FtmDzZeXlgLelI72ZWIe70Vxs",
+      authDomain: "medistocknam.firebaseapp.com",
+      projectId: "medistocknam",
+      storageBucket: "medistocknam.firebasestorage.app",
+      messagingSenderId: "655975219577",
+      appId: "1:655975219577:web:e2af28bb0dc66dce2befa8",
+      measurementId: "G-KYNW6Y8HMM"
+    };
+  
+    // Initialize Firebase services
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+
+    // Make Firebase services available globally
+    window.firebaseServices = {
+      db,
+      auth,
+      storage,
+      analytics
+    };
+
+    // Firebase Authentication Functions
+    window.firebaseAuth = {
+      // Sign in with email and password
+      signIn: async (email, password) => {
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          return { success: true, user: userCredential.user };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Create new user
+      signUp: async (email, password) => {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          return { success: true, user: userCredential.user };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Sign out
+      signOut: async () => {
+        try {
+          await signOut(auth);
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Get current user
+      getCurrentUser: () => {
+        return auth.currentUser;
+      },
+
+      // Listen to auth state changes
+      onAuthStateChanged: (callback) => {
+        return onAuthStateChanged(auth, callback);
+      }
+    };
+
+    // Firestore Database Functions
+    window.firebaseDB = {
+      // Add medication to Firestore
+      addMedication: async (medication) => {
+        try {
+          const docRef = await addDoc(collection(db, "medications"), {
+            ...medication,
+            createdAt: new Date(),
+            userId: auth.currentUser?.uid || 'anonymous'
+          });
+          return { success: true, id: docRef.id };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Get all medications
+      getMedications: async () => {
+        try {
+          const q = query(collection(db, "medications"), orderBy("createdAt", "desc"));
+          const querySnapshot = await getDocs(q);
+          const medications = [];
+          querySnapshot.forEach((doc) => {
+            medications.push({ id: doc.id, ...doc.data() });
+          });
+          return { success: true, data: medications };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Update medication
+      updateMedication: async (id, medication) => {
+        try {
+          const docRef = doc(db, "medications", id);
+          await updateDoc(docRef, {
+            ...medication,
+            updatedAt: new Date()
+          });
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Delete medication
+      deleteMedication: async (id) => {
+        try {
+          await deleteDoc(doc(db, "medications", id));
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Add prescription
+      addPrescription: async (prescription) => {
+        try {
+          const docRef = await addDoc(collection(db, "prescriptions"), {
+            ...prescription,
+            createdAt: new Date(),
+            userId: auth.currentUser?.uid || 'anonymous'
+          });
+          return { success: true, id: docRef.id };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Get prescriptions
+      getPrescriptions: async () => {
+        try {
+          const q = query(collection(db, "prescriptions"), orderBy("createdAt", "desc"));
+          const querySnapshot = await getDocs(q);
+          const prescriptions = [];
+          querySnapshot.forEach((doc) => {
+            prescriptions.push({ id: doc.id, ...doc.data() });
+          });
+          return { success: true, data: prescriptions };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      }
+    };
+
+    // Firebase Storage Functions
+    window.firebaseStorage = {
+      // Upload image
+      uploadImage: async (file, path) => {
+        try {
+          const storageRef = ref(storage, path);
+          const snapshot = await uploadBytes(storageRef, file);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          return { success: true, url: downloadURL };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Delete image
+      deleteImage: async (path) => {
+        try {
+          const storageRef = ref(storage, path);
+          await deleteObject(storageRef);
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      }
+    };
+
+    console.log("Firebase services initialized successfully!");
+  </script>
   <div id="loginScreen">
     <div class="login-card">
       <h2 class="mb-4"><i class="bi bi-shield-lock"></i> Acceso al sistema</h2>
@@ -1593,6 +1784,14 @@
       
       <div class="stats-container" id="statsContainer">
         <!-- Stats will be populated by JavaScript -->
+      </div>
+      
+      <!-- Loading Indicator -->
+      <div id="loadingIndicator" style="display: none; text-align: center; padding: 20px;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando datos...</p>
       </div>
       
       <div class="form-section" id="formSection">
@@ -1961,18 +2160,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "medications";
-    const REQUESTS_STORAGE_KEY = "medicationRequests";
-    const PRESCRIPTIONS_STORAGE_KEY = "prescriptions";
-    let editingIndex = -1;
-    let searchTimeout = null;
-    let isFormCollapsed = false;
-    let prescriptionPhotoData = null;
-    let prescriptionImageStream = null;
-    let editingPrescriptionIndex = -1;
-    let currentUser = null;
-
-    // Profile Management System
+    // Profile Management System - Define first to avoid initialization errors
     const PROFILES = {
       'Farmacia': {
         password: '123',
@@ -1985,6 +2173,20 @@
         name: 'Deposito'
       }
     };
+
+    // Global variables - Define early to avoid initialization errors
+    let currentUser = null;
+    let editingIndex = -1;
+    let searchTimeout = null;
+    let isFormCollapsed = false;
+    let prescriptionPhotoData = null;
+    let prescriptionImageStream = null;
+    let editingPrescriptionIndex = -1;
+
+    // Firebase is initialized in the module script below
+    const STORAGE_KEY = "medications";
+    const REQUESTS_STORAGE_KEY = "medicationRequests";
+    const PRESCRIPTIONS_STORAGE_KEY = "prescriptions";
 
     // Navigation Functions
     function showMainMenu() {
@@ -2045,7 +2247,7 @@
       welcomeMessage.innerHTML = `<i class="bi bi-capsule"></i> Gestor de Medicamentos - ${currentUser.name}`;
     }
 
-    function showMedicationManager() {
+    async function showMedicationManager() {
       if (!currentUser || !currentUser.access.includes('medicationManager')) {
         showToast("Acceso denegado", "No tiene permisos para acceder a esta sección", "danger");
         return;
@@ -2055,7 +2257,7 @@
       document.getElementById('medicationManagerScreen').style.display = 'block';
       document.getElementById('medicationRequestsScreen').style.display = 'none';
       document.getElementById('prescriptionArchiveScreen').style.display = 'none';
-      renderMedications();
+      await renderMedications();
     }
 
     function showMedicationRequests() {
@@ -2534,7 +2736,7 @@
       document.getElementById('toast').classList.remove('show');
     }
 
-    function checkPassword() {
+    async function checkPassword() {
       const username = document.getElementById("usernameInput").value.trim();
       const password = document.getElementById("passwordInput").value;
       
@@ -2553,8 +2755,14 @@
         loginScreen.classList.add('fade-out');
         
         // Wait for animation to complete, then hide the element and show main menu
-        setTimeout(() => {
+        setTimeout(async () => {
           loginScreen.style.display = "none";
+          
+          // Sync local data to Firebase if available
+          if (window.firebaseDB) {
+            await syncLocalDataToFirebase();
+          }
+          
           showMainMenu();
           showToast("¡Bienvenido!", `Acceso exitoso al sistema - ${profile.name}`, "success");
         }, 600); // Match the CSS transition duration
@@ -2564,13 +2772,85 @@
       }
     }
 
-    function loadMedications() {
-      const data = localStorage.getItem(STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+    // Global variable to store medications from Firebase
+    let medicationsFromFirebase = [];
+    let isLoading = false;
+
+    // Function to show loading state
+    function showLoading(show = true) {
+      isLoading = show;
+      const loadingElement = document.getElementById('loadingIndicator');
+      if (loadingElement) {
+        loadingElement.style.display = show ? 'block' : 'none';
+      }
     }
 
-    function saveMedications(meds) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(meds));
+    // Function to sync data from localStorage to Firebase
+    async function syncLocalDataToFirebase() {
+      if (!window.firebaseDB) return;
+      
+      try {
+        const localData = localStorage.getItem(STORAGE_KEY);
+        if (localData) {
+          const localMedications = JSON.parse(localData);
+          if (localMedications.length > 0) {
+            showToast("Sincronizando", "Sincronizando datos locales con la base de datos...", "info");
+            
+            for (const med of localMedications) {
+              await window.firebaseDB.addMedication(med);
+            }
+            
+            // Clear local data after successful sync
+            localStorage.removeItem(STORAGE_KEY);
+            showToast("Sincronizado", "Datos sincronizados correctamente", "success");
+          }
+        }
+      } catch (error) {
+        console.error("Error syncing data:", error);
+        showToast("Error", "Error al sincronizar datos", "danger");
+      }
+    }
+
+    async function loadMedications() {
+      try {
+        // Try to load from Firebase first
+        if (window.firebaseDB) {
+          const result = await window.firebaseDB.getMedications();
+          if (result.success) {
+            medicationsFromFirebase = result.data;
+            return result.data;
+          } else {
+            console.warn("Firebase load failed, falling back to localStorage:", result.error);
+          }
+        }
+        
+        // Fallback to localStorage
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+      } catch (error) {
+        console.error("Error loading medications:", error);
+        // Fallback to localStorage
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+      }
+    }
+
+    async function saveMedications(meds) {
+      try {
+        // Save to Firebase if available
+        if (window.firebaseDB) {
+          // For now, we'll save to localStorage as backup
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(meds));
+          return;
+        }
+        
+        // Fallback to localStorage only
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(meds));
+      } catch (error) {
+        console.error("Error saving medications:", error);
+        // Fallback to localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(meds));
+      }
     }
 
     function daysUntil(date) {
@@ -2580,8 +2860,8 @@
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    function updateStats() {
-      const meds = loadMedications();
+    async function updateStats() {
+      const meds = await loadMedications();
       const total = meds.length;
       const expiringSoon = meds.filter(m => {
         const days = daysUntil(m.expiryDate);
@@ -2605,14 +2885,33 @@
       `;
     }
 
-    function deleteMedication(index) {
+    async function deleteMedication(index) {
       if (confirm('¿Está seguro de que desea eliminar este medicamento?')) {
-        const meds = loadMedications();
-        const deletedMed = meds[index];
-        meds.splice(index, 1);
-        saveMedications(meds);
-        renderMedications();
-        showToast("Eliminado", `Medicamento "${deletedMed.name}" eliminado`, "success");
+        try {
+          const meds = await loadMedications();
+          const deletedMed = meds[index];
+          
+          // Try to delete from Firebase first
+          if (window.firebaseDB && deletedMed.id) {
+            const result = await window.firebaseDB.deleteMedication(deletedMed.id);
+            if (result.success) {
+              showToast("Eliminado", `Medicamento "${deletedMed.name}" eliminado de la base de datos`, "success");
+              await renderMedications();
+              return;
+            } else {
+              console.warn("Firebase delete failed, falling back to localStorage:", result.error);
+            }
+          }
+
+          // Fallback to localStorage
+          meds.splice(index, 1);
+          await saveMedications(meds);
+          await renderMedications();
+          showToast("Eliminado", `Medicamento "${deletedMed.name}" eliminado`, "success");
+        } catch (error) {
+          console.error("Error deleting medication:", error);
+          showToast("Error", "No se pudo eliminar el medicamento", "danger");
+        }
       }
     }
 
@@ -2916,12 +3215,13 @@
       return classMap[form] || 'sin-especificar';
     }
 
-    function renderMedications() {
+    async function renderMedications() {
       const list = document.getElementById("medicationList");
       const filter = document.getElementById("filterInput").value.toLowerCase();
       const sortBy = document.getElementById("sortSelect").value;
       
-      let meds = loadMedications().filter(m => 
+      let meds = await loadMedications();
+      meds = meds.filter(m => 
         m.name.toLowerCase().includes(filter) ||
         m.dose.toLowerCase().includes(filter) ||
         (m.form && m.form.toLowerCase().includes(filter))
@@ -3052,7 +3352,7 @@
       updateStats();
     }
 
-    function addMedication() {
+    async function addMedication() {
       const name = document.getElementById("name").value.trim();
       const dose = document.getElementById("dose").value.trim();
       const expiryDate = document.getElementById("expiryDate").value;
@@ -3106,14 +3406,34 @@
         return;
       }
 
-      const meds = loadMedications();
-      const creationDate = new Date().toISOString().split('T')[0];
-      meds.push({ name, dose, expiryDate, quantity, form, creationDate });
-      saveMedications(meds);
-      
-      clearForm();
-      renderMedications();
-      showToast("Agregado", `Medicamento "${name}" agregado correctamente`, "success");
+      const medication = { name, dose, expiryDate, quantity, form, creationDate: new Date().toISOString().split('T')[0] };
+
+      try {
+        // Try to save to Firebase first
+        if (window.firebaseDB) {
+          const result = await window.firebaseDB.addMedication(medication);
+          if (result.success) {
+            showToast("Agregado", `Medicamento "${name}" agregado a la base de datos`, "success");
+            clearForm();
+            await renderMedications();
+            return;
+          } else {
+            console.warn("Firebase save failed, falling back to localStorage:", result.error);
+          }
+        }
+
+        // Fallback to localStorage
+        const meds = await loadMedications();
+        meds.push(medication);
+        await saveMedications(meds);
+        
+        clearForm();
+        await renderMedications();
+        showToast("Agregado", `Medicamento "${name}" agregado correctamente`, "success");
+      } catch (error) {
+        console.error("Error adding medication:", error);
+        showToast("Error", "No se pudo agregar el medicamento", "danger");
+      }
     }
 
     function exportToCSV() {
@@ -4407,8 +4727,8 @@
       renderPrescriptions();
       showToast("Foto agregada", "Foto agregada a la receta correctamente", "success");
     }
-  </script>
-</body>
+      </script>
+  </body>
 </html>
 
 
