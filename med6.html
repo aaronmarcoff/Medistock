@@ -1760,6 +1760,59 @@
         } catch (error) {
           return { success: false, error: error.message };
         }
+      },
+
+      // Add prescription
+      addPrescription: async (prescription) => {
+        try {
+          const docRef = await addDoc(collection(db, "prescriptions"), {
+            ...prescription,
+            createdAt: new Date(),
+            userId: auth.currentUser?.uid || 'anonymous'
+          });
+          return { success: true, id: docRef.id };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Get prescriptions
+      getPrescriptions: async () => {
+        try {
+          const q = query(collection(db, "prescriptions"), orderBy("createdAt", "desc"));
+          const querySnapshot = await getDocs(q);
+          const prescriptions = [];
+          querySnapshot.forEach((doc) => {
+            prescriptions.push({ id: doc.id, ...doc.data() });
+          });
+          return { success: true, data: prescriptions };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Update prescription
+      updatePrescription: async (id, prescription) => {
+        try {
+          const docRef = doc(db, "prescriptions", id);
+          await updateDoc(docRef, {
+            ...prescription,
+            updatedAt: new Date()
+          });
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Delete prescription
+      deletePrescription: async (id) => {
+        try {
+          await deleteDoc(doc(db, "prescriptions", id));
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
       }
     };
 
@@ -2326,7 +2379,7 @@
       await renderMedicationRequests();
     }
 
-    function showPrescriptionArchive() {
+    async function showPrescriptionArchive() {
       if (!currentUser || !currentUser.access.includes('prescriptionArchive')) {
         showToast("Acceso denegado", "No tiene permisos para acceder a esta sección", "danger");
         return;
@@ -2336,7 +2389,7 @@
       document.getElementById('medicationManagerScreen').style.display = 'none';
       document.getElementById('medicationRequestsScreen').style.display = 'none';
       document.getElementById('prescriptionArchiveScreen').style.display = 'block';
-      renderPrescriptions();
+      await renderPrescriptions();
     }
 
     function logout() {
@@ -2968,6 +3021,23 @@
             // Clear local data after successful sync
             localStorage.removeItem(REQUESTS_STORAGE_KEY);
             showToast("Solicitudes sincronizadas", "Solicitudes sincronizadas correctamente", "success");
+          }
+        }
+
+        // Sync prescriptions
+        const localPrescriptionData = localStorage.getItem(PRESCRIPTIONS_STORAGE_KEY);
+        if (localPrescriptionData) {
+          const localPrescriptions = JSON.parse(localPrescriptionData);
+          if (localPrescriptions.length > 0) {
+            showToast("Sincronizando", "Sincronizando recetas locales con la base de datos...", "info");
+            
+            for (const prescription of localPrescriptions) {
+              await window.firebaseDB.addPrescription(prescription);
+            }
+            
+            // Clear local data after successful sync
+            localStorage.removeItem(PRESCRIPTIONS_STORAGE_KEY);
+            showToast("Recetas sincronizadas", "Recetas sincronizadas correctamente", "success");
           }
         }
       } catch (error) {
@@ -4539,16 +4609,48 @@
     }
 
     // Prescription Archive Functions
-    function loadPrescriptions() {
-      const data = localStorage.getItem(PRESCRIPTIONS_STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+    async function loadPrescriptions() {
+      try {
+        // Try to load from Firebase first
+        if (window.firebaseDB) {
+          const result = await window.firebaseDB.getPrescriptions();
+          if (result.success) {
+            return result.data;
+          } else {
+            console.warn("Firebase load failed, falling back to localStorage:", result.error);
+          }
+        }
+        
+        // Fallback to localStorage
+        const data = localStorage.getItem(PRESCRIPTIONS_STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+      } catch (error) {
+        console.error("Error loading prescriptions:", error);
+        // Fallback to localStorage
+        const data = localStorage.getItem(PRESCRIPTIONS_STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+      }
     }
 
-    function savePrescriptions(prescriptions) {
-      localStorage.setItem(PRESCRIPTIONS_STORAGE_KEY, JSON.stringify(prescriptions));
+    async function savePrescriptions(prescriptions) {
+      try {
+        // Save to Firebase if available
+        if (window.firebaseDB) {
+          // For now, we'll save to localStorage as backup
+          localStorage.setItem(PRESCRIPTIONS_STORAGE_KEY, JSON.stringify(prescriptions));
+          return;
+        }
+        
+        // Fallback to localStorage only
+        localStorage.setItem(PRESCRIPTIONS_STORAGE_KEY, JSON.stringify(prescriptions));
+      } catch (error) {
+        console.error("Error saving prescriptions:", error);
+        // Fallback to localStorage
+        localStorage.setItem(PRESCRIPTIONS_STORAGE_KEY, JSON.stringify(prescriptions));
+      }
     }
 
-    function addPrescription() {
+    async function addPrescription() {
       const name = document.getElementById("prescriptionName").value.trim();
       const dose = document.getElementById("prescriptionDose").value.trim();
       const quantity = document.getElementById("prescriptionQuantity").value.trim();
@@ -4562,9 +4664,7 @@
         return;
       }
 
-      const prescriptions = loadPrescriptions();
-      const creationDate = new Date().toISOString().split('T')[0];
-      prescriptions.push({ 
+      const prescription = { 
         name, 
         dose, 
         quantity, 
@@ -4572,12 +4672,40 @@
         doctor, 
         patient,
         notes, 
-        creationDate,
+        creationDate: new Date().toISOString().split('T')[0],
         photo: prescriptionPhotoData
-      });
-      savePrescriptions(prescriptions);
-      
-      // Clear form
+      };
+
+      try {
+        // Try to save to Firebase first
+        if (window.firebaseDB) {
+          const result = await window.firebaseDB.addPrescription(prescription);
+          if (result.success) {
+            showToast("Receta agregada", `Receta para "${name}" agregada a la base de datos`, "success");
+            clearPrescriptionForm();
+            await renderPrescriptions();
+            return;
+          } else {
+            console.warn("Firebase save failed, falling back to localStorage:", result.error);
+          }
+        }
+
+        // Fallback to localStorage
+        const prescriptions = await loadPrescriptions();
+        prescriptions.push(prescription);
+        await savePrescriptions(prescriptions);
+        
+        clearPrescriptionForm();
+        await renderPrescriptions();
+        showToast("Receta agregada", `Receta para "${name}" agregada correctamente`, "success");
+      } catch (error) {
+        console.error("Error adding prescription:", error);
+        showToast("Error", "No se pudo agregar la receta", "danger");
+      }
+    
+    }
+
+    function clearPrescriptionForm() {
       document.getElementById("prescriptionName").value = "";
       document.getElementById("prescriptionDose").value = "";
       document.getElementById("prescriptionQuantity").value = "";
@@ -4587,28 +4715,45 @@
       document.getElementById("prescriptionNotes").value = "";
       removePrescriptionPhoto();
       editingPrescriptionIndex = -1; // Reset editing mode
-      
-      renderPrescriptions();
-      showToast("Receta agregada", `Receta para "${name}" agregada correctamente`, "success");
     }
 
-    function deletePrescription(index) {
+    async function deletePrescription(index) {
       if (confirm('¿Está seguro de que desea eliminar esta receta?')) {
-        const prescriptions = loadPrescriptions();
-        const deletedPrescription = prescriptions[index];
-        prescriptions.splice(index, 1);
-        savePrescriptions(prescriptions);
-        renderPrescriptions();
-        showToast("Eliminado", `Receta "${deletedPrescription.name}" eliminada`, "success");
+        try {
+          const prescriptions = await loadPrescriptions();
+          const deletedPrescription = prescriptions[index];
+          
+          // Try to delete from Firebase first
+          if (window.firebaseDB && deletedPrescription.id) {
+            const result = await window.firebaseDB.deletePrescription(deletedPrescription.id);
+            if (result.success) {
+              showToast("Eliminado", `Receta "${deletedPrescription.name}" eliminada de la base de datos`, "success");
+              await renderPrescriptions();
+              return;
+            } else {
+              console.warn("Firebase delete failed, falling back to localStorage:", result.error);
+            }
+          }
+
+          // Fallback to localStorage
+          prescriptions.splice(index, 1);
+          await savePrescriptions(prescriptions);
+          await renderPrescriptions();
+          showToast("Eliminado", `Receta "${deletedPrescription.name}" eliminada`, "success");
+        } catch (error) {
+          console.error("Error deleting prescription:", error);
+          showToast("Error", "No se pudo eliminar la receta", "danger");
+        }
       }
     }
 
-    function renderPrescriptions() {
+    async function renderPrescriptions() {
       const list = document.getElementById("prescriptionList");
       const filter = document.getElementById("prescriptionFilterInput").value.toLowerCase();
       const sortBy = document.getElementById("prescriptionSortSelect").value;
       
-      let prescriptions = loadPrescriptions().filter(p => 
+      let prescriptions = await loadPrescriptions();
+      prescriptions = prescriptions.filter(p => 
         p.name.toLowerCase().includes(filter) ||
         p.dose.toLowerCase().includes(filter) ||
         (p.doctor && p.doctor.toLowerCase().includes(filter)) ||
