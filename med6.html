@@ -1707,6 +1707,59 @@
         } catch (error) {
           return { success: false, error: error.message };
         }
+      },
+
+      // Add medication request
+      addMedicationRequest: async (request) => {
+        try {
+          const docRef = await addDoc(collection(db, "medicationRequests"), {
+            ...request,
+            createdAt: new Date(),
+            userId: auth.currentUser?.uid || 'anonymous'
+          });
+          return { success: true, id: docRef.id };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Get medication requests
+      getMedicationRequests: async () => {
+        try {
+          const q = query(collection(db, "medicationRequests"), orderBy("createdAt", "desc"));
+          const querySnapshot = await getDocs(q);
+          const requests = [];
+          querySnapshot.forEach((doc) => {
+            requests.push({ id: doc.id, ...doc.data() });
+          });
+          return { success: true, data: requests };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Update medication request
+      updateMedicationRequest: async (id, request) => {
+        try {
+          const docRef = doc(db, "medicationRequests", id);
+          await updateDoc(docRef, {
+            ...request,
+            updatedAt: new Date()
+          });
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Delete medication request
+      deleteMedicationRequest: async (id) => {
+        try {
+          await deleteDoc(doc(db, "medicationRequests", id));
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
       }
     };
 
@@ -2260,7 +2313,7 @@
       await renderMedications();
     }
 
-    function showMedicationRequests() {
+    async function showMedicationRequests() {
       if (!currentUser || !currentUser.access.includes('medicationRequests')) {
         showToast("Acceso denegado", "No tiene permisos para acceder a esta sección", "danger");
         return;
@@ -2270,7 +2323,7 @@
       document.getElementById('medicationManagerScreen').style.display = 'none';
       document.getElementById('medicationRequestsScreen').style.display = 'block';
       document.getElementById('prescriptionArchiveScreen').style.display = 'none';
-      renderMedicationRequests();
+      await renderMedicationRequests();
     }
 
     function showPrescriptionArchive() {
@@ -2309,16 +2362,48 @@
     }
 
     // Medication Requests Functions
-    function loadMedicationRequests() {
-      const data = localStorage.getItem(REQUESTS_STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+    async function loadMedicationRequests() {
+      try {
+        // Try to load from Firebase first
+        if (window.firebaseDB) {
+          const result = await window.firebaseDB.getMedicationRequests();
+          if (result.success) {
+            return result.data;
+          } else {
+            console.warn("Firebase load failed, falling back to localStorage:", result.error);
+          }
+        }
+        
+        // Fallback to localStorage
+        const data = localStorage.getItem(REQUESTS_STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+      } catch (error) {
+        console.error("Error loading medication requests:", error);
+        // Fallback to localStorage
+        const data = localStorage.getItem(REQUESTS_STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+      }
     }
 
-    function saveMedicationRequests(requests) {
-      localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(requests));
+    async function saveMedicationRequests(requests) {
+      try {
+        // Save to Firebase if available
+        if (window.firebaseDB) {
+          // For now, we'll save to localStorage as backup
+          localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(requests));
+          return;
+        }
+        
+        // Fallback to localStorage only
+        localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(requests));
+      } catch (error) {
+        console.error("Error saving medication requests:", error);
+        // Fallback to localStorage
+        localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(requests));
+      }
     }
 
-    function addMedicationRequest() {
+    async function addMedicationRequest() {
       const name = document.getElementById("requestName").value.trim();
       const dose = document.getElementById("requestDose").value.trim();
       const form = document.getElementById("requestForm").value;
@@ -2331,58 +2416,120 @@
         return;
       }
 
-      const requests = loadMedicationRequests();
-      const creationDate = new Date().toISOString().split('T')[0];
-      requests.push({ 
+      const request = { 
         name, 
         dose, 
         form, 
         quantity, 
         priority, 
         notes, 
-        creationDate,
+        creationDate: new Date().toISOString().split('T')[0],
         status: 'Pendiente'
-      });
-      saveMedicationRequests(requests);
-      
-      // Clear form
+      };
+
+      try {
+        // Try to save to Firebase first
+        if (window.firebaseDB) {
+          const result = await window.firebaseDB.addMedicationRequest(request);
+          if (result.success) {
+            showToast("Solicitud agregada", `Solicitud para "${name}" agregada a la base de datos`, "success");
+            clearRequestForm();
+            await renderMedicationRequests();
+            return;
+          } else {
+            console.warn("Firebase save failed, falling back to localStorage:", result.error);
+          }
+        }
+
+        // Fallback to localStorage
+        const requests = await loadMedicationRequests();
+        requests.push(request);
+        await saveMedicationRequests(requests);
+        
+        clearRequestForm();
+        await renderMedicationRequests();
+        showToast("Solicitud agregada", `Solicitud para "${name}" agregada correctamente`, "success");
+      } catch (error) {
+        console.error("Error adding medication request:", error);
+        showToast("Error", "No se pudo agregar la solicitud", "danger");
+      }
+    }
+
+    function clearRequestForm() {
       document.getElementById("requestName").value = "";
       document.getElementById("requestDose").value = "";
       document.getElementById("requestForm").value = "";
       document.getElementById("requestQuantity").value = "";
       document.getElementById("requestPriority").value = "Media";
       document.getElementById("requestNotes").value = "";
-      
-      renderMedicationRequests();
-      showToast("Solicitud agregada", `Solicitud para "${name}" agregada correctamente`, "success");
     }
 
-    function deleteMedicationRequest(index) {
+    async function deleteMedicationRequest(index) {
       if (confirm('¿Está seguro de que desea eliminar esta solicitud?')) {
-        const requests = loadMedicationRequests();
-        const deletedRequest = requests[index];
-        requests.splice(index, 1);
-        saveMedicationRequests(requests);
-        renderMedicationRequests();
-        showToast("Eliminado", `Solicitud "${deletedRequest.name}" eliminada`, "success");
+        try {
+          const requests = await loadMedicationRequests();
+          const deletedRequest = requests[index];
+          
+          // Try to delete from Firebase first
+          if (window.firebaseDB && deletedRequest.id) {
+            const result = await window.firebaseDB.deleteMedicationRequest(deletedRequest.id);
+            if (result.success) {
+              showToast("Eliminado", `Solicitud "${deletedRequest.name}" eliminada de la base de datos`, "success");
+              await renderMedicationRequests();
+              return;
+            } else {
+              console.warn("Firebase delete failed, falling back to localStorage:", result.error);
+            }
+          }
+
+          // Fallback to localStorage
+          requests.splice(index, 1);
+          await saveMedicationRequests(requests);
+          await renderMedicationRequests();
+          showToast("Eliminado", `Solicitud "${deletedRequest.name}" eliminada`, "success");
+        } catch (error) {
+          console.error("Error deleting medication request:", error);
+          showToast("Error", "No se pudo eliminar la solicitud", "danger");
+        }
       }
     }
 
-    function markRequestAsCompleted(index) {
-      const requests = loadMedicationRequests();
-      requests[index].status = 'Completada';
-      requests[index].completedDate = new Date().toISOString().split('T')[0];
-      saveMedicationRequests(requests);
-      renderMedicationRequests();
-      showToast("Completada", `Solicitud "${requests[index].name}" marcada como completada`, "success");
+    async function markRequestAsCompleted(index) {
+      try {
+        const requests = await loadMedicationRequests();
+        const request = requests[index];
+        request.status = 'Completada';
+        request.completedDate = new Date().toISOString().split('T')[0];
+        
+        // Try to update in Firebase first
+        if (window.firebaseDB && request.id) {
+          const result = await window.firebaseDB.updateMedicationRequest(request.id, request);
+          if (result.success) {
+            showToast("Completada", `Solicitud "${request.name}" marcada como completada en la base de datos`, "success");
+            await renderMedicationRequests();
+            return;
+          } else {
+            console.warn("Firebase update failed, falling back to localStorage:", result.error);
+          }
+        }
+
+        // Fallback to localStorage
+        await saveMedicationRequests(requests);
+        await renderMedicationRequests();
+        showToast("Completada", `Solicitud "${request.name}" marcada como completada`, "success");
+      } catch (error) {
+        console.error("Error marking request as completed:", error);
+        showToast("Error", "No se pudo marcar la solicitud como completada", "danger");
+      }
     }
 
-    function renderMedicationRequests() {
+    async function renderMedicationRequests() {
       const list = document.getElementById("medicationRequestsList");
       const filter = document.getElementById("requestFilterInput").value.toLowerCase();
       const sortBy = document.getElementById("requestSortSelect").value;
       
-      let requests = loadMedicationRequests().filter(r => 
+      let requests = await loadMedicationRequests();
+      requests = requests.filter(r => 
         r.name.toLowerCase().includes(filter) ||
         r.dose.toLowerCase().includes(filter) ||
         (r.form && r.form.toLowerCase().includes(filter)) ||
@@ -2790,11 +2937,12 @@
       if (!window.firebaseDB) return;
       
       try {
-        const localData = localStorage.getItem(STORAGE_KEY);
-        if (localData) {
-          const localMedications = JSON.parse(localData);
+        // Sync medications
+        const localMedData = localStorage.getItem(STORAGE_KEY);
+        if (localMedData) {
+          const localMedications = JSON.parse(localMedData);
           if (localMedications.length > 0) {
-            showToast("Sincronizando", "Sincronizando datos locales con la base de datos...", "info");
+            showToast("Sincronizando", "Sincronizando medicamentos locales con la base de datos...", "info");
             
             for (const med of localMedications) {
               await window.firebaseDB.addMedication(med);
@@ -2802,7 +2950,24 @@
             
             // Clear local data after successful sync
             localStorage.removeItem(STORAGE_KEY);
-            showToast("Sincronizado", "Datos sincronizados correctamente", "success");
+            showToast("Medicamentos sincronizados", "Medicamentos sincronizados correctamente", "success");
+          }
+        }
+
+        // Sync medication requests
+        const localRequestData = localStorage.getItem(REQUESTS_STORAGE_KEY);
+        if (localRequestData) {
+          const localRequests = JSON.parse(localRequestData);
+          if (localRequests.length > 0) {
+            showToast("Sincronizando", "Sincronizando solicitudes locales con la base de datos...", "info");
+            
+            for (const request of localRequests) {
+              await window.firebaseDB.addMedicationRequest(request);
+            }
+            
+            // Clear local data after successful sync
+            localStorage.removeItem(REQUESTS_STORAGE_KEY);
+            showToast("Solicitudes sincronizadas", "Solicitudes sincronizadas correctamente", "success");
           }
         }
       } catch (error) {
