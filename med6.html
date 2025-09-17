@@ -1878,6 +1878,81 @@
     </div>
   </div>
 
+  <!-- Expiry Notification Modal -->
+  <div id="expiryNotificationModal" style="display:none; position:fixed; z-index:10002; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; padding:1rem;">
+    <div style="background:white; padding:2rem; border-radius:15px; box-shadow:0 20px 40px rgba(0,0,0,0.3); text-align:center; width:100%; max-width:700px; margin:1rem; animation: modalSlideIn 0.3s ease-out;">
+      <div style="color:#dc3545; font-size:3rem; margin-bottom:1rem; animation: pulse 2s infinite;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <h3 style="color:#dc3545; margin-bottom:1rem; font-weight:600;">⚠️ Medicamentos Próximos a Vencer</h3>
+      <p style="color:#666; margin-bottom:1.5rem; font-size:1.1rem;">Los siguientes medicamentos están próximos a vencer (90 días o menos):</p>
+      
+      <div id="expiringMedicinesList" style="text-align:left; margin-bottom:2rem; max-height:400px; overflow-y:auto; border:2px solid #f8d7da; border-radius:10px; padding:0; background:#f8f9fa;">
+        <!-- Expiring medicines will be populated here -->
+      </div>
+      
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <button class="btn btn-primary btn-lg" onclick="closeExpiryNotification()" style="min-width:140px; padding:0.75rem 1.5rem;">
+          <i class="bi bi-check-circle"></i> Entendido
+        </button>
+        <button class="btn btn-outline-secondary btn-lg" onclick="closeExpiryNotification(); showMedicationManager();" style="min-width:140px; padding:0.75rem 1.5rem;">
+          <i class="bi bi-eye"></i> Ver Lista
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+    
+    .expiry-item {
+      padding: 1rem;
+      border-bottom: 1px solid #e9ecef;
+      transition: background-color 0.2s ease;
+    }
+    
+    .expiry-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .expiry-item:last-child {
+      border-bottom: none;
+    }
+    
+    .urgency-critical {
+      color: #dc3545 !important;
+      font-weight: bold;
+    }
+    
+    .urgency-warning {
+      color: #fd7e14 !important;
+      font-weight: bold;
+    }
+    
+    .urgency-info {
+      color: #0dcaf0 !important;
+      font-weight: bold;
+    }
+  </style>
+
   <!-- Medication Manager Screen -->
   <div id="medicationManagerScreen" style="display:none;">
     <div class="main-container">
@@ -1949,6 +2024,9 @@
             </button>
             <button class="btn btn-secondary" type="button" onclick="openImageCapture()">
               <i class="bi bi-camera"></i> Capturar Imagen
+            </button>
+            <button class="btn btn-outline-warning" type="button" onclick="checkExpiringMedicines(true)" title="Verificar medicamentos próximos a vencer">
+              <i class="bi bi-exclamation-triangle"></i> Verificar Vencimientos
             </button>
           </div>
         </div>
@@ -2364,6 +2442,11 @@
       document.getElementById('medicationRequestsScreen').style.display = 'none';
       document.getElementById('prescriptionArchiveScreen').style.display = 'none';
       await renderMedications();
+      
+      // Check for expiring medicines and show notification if needed
+      setTimeout(() => {
+        checkExpiringMedicines();
+      }, 1000); // Small delay to ensure medications are loaded
     }
 
     async function showMedicationRequests() {
@@ -3095,6 +3178,104 @@
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
+    // Check for medicines expiring in 90 days or less
+    async function checkExpiringMedicines(forceShow = false) {
+      try {
+        const meds = await loadMedications();
+        const expiringMedicines = meds.filter(med => {
+          const days = daysUntil(med.expiryDate);
+          return days <= 90 && days >= 0; // 90 days or less, but not expired
+        });
+
+        if (expiringMedicines.length > 0) {
+          if (forceShow) {
+            // Manual check - always show notification
+            showExpiryNotification(expiringMedicines);
+          } else {
+            // Automatic check - only show once per day
+            const today = new Date().toDateString();
+            const lastNotificationDate = localStorage.getItem('lastExpiryNotificationDate');
+            
+            if (lastNotificationDate !== today) {
+              showExpiryNotification(expiringMedicines);
+              localStorage.setItem('lastExpiryNotificationDate', today);
+            }
+          }
+        } else if (forceShow) {
+          // Manual check with no expiring medicines
+          showToast("Verificación completada", "No hay medicamentos próximos a vencer (90 días o menos)", "success");
+        }
+      } catch (error) {
+        console.error('Error checking expiring medicines:', error);
+        if (forceShow) {
+          showToast("Error", "No se pudo verificar los medicamentos próximos a vencer", "danger");
+        }
+      }
+    }
+
+    // Show expiry notification modal
+    function showExpiryNotification(expiringMedicines) {
+      const modal = document.getElementById('expiryNotificationModal');
+      const listContainer = document.getElementById('expiringMedicinesList');
+      
+      // Sort medicines by days until expiry (closest first)
+      expiringMedicines.sort((a, b) => daysUntil(a.expiryDate) - daysUntil(b.expiryDate));
+      
+      // Create list of expiring medicines
+      let listHTML = '';
+      expiringMedicines.forEach((med, index) => {
+        const days = daysUntil(med.expiryDate);
+        const expiryDate = new Date(med.expiryDate).toLocaleDateString('es-ES');
+        const urgencyClass = days <= 30 ? 'urgency-critical' : days <= 60 ? 'urgency-warning' : 'urgency-info';
+        const urgencyIcon = days <= 30 ? '🚨' : days <= 60 ? '⚠️' : 'ℹ️';
+        
+        listHTML += `
+          <div class="expiry-item" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                <span style="font-size:1.2rem;">${urgencyIcon}</span>
+                <strong style="font-size:1.1rem;">${med.name}</strong>
+              </div>
+              <small class="text-muted">${med.dose} - ${med.quantity} unidades</small>
+            </div>
+            <div class="text-end" style="min-width:120px;">
+              <div class="${urgencyClass}" style="font-size:1.1rem;">${days} días</div>
+              <small class="text-muted">Vence: ${expiryDate}</small>
+            </div>
+          </div>
+        `;
+      });
+      
+      listContainer.innerHTML = listHTML;
+      modal.style.display = 'flex';
+      
+      // Add a subtle notification sound effect (optional)
+      try {
+        // Create a subtle beep sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } catch (e) {
+        // Audio not supported, continue silently
+      }
+    }
+
+    // Close expiry notification modal
+    function closeExpiryNotification() {
+      const modal = document.getElementById('expiryNotificationModal');
+      modal.style.display = 'none';
+    }
+
     async function updateStats() {
       const meds = await loadMedications();
       const total = meds.length;
@@ -3651,6 +3832,11 @@
             showToast("Agregado", `Medicamento "${name}" agregado a la base de datos`, "success");
             clearForm();
             await renderMedications();
+            
+            // Check for expiring medicines after adding new medication
+            setTimeout(() => {
+              checkExpiringMedicines();
+            }, 500);
             return;
           } else {
             console.warn("Firebase save failed, falling back to localStorage:", result.error);
@@ -3665,6 +3851,11 @@
         clearForm();
         await renderMedications();
         showToast("Agregado", `Medicamento "${name}" agregado correctamente`, "success");
+        
+        // Check for expiring medicines after adding new medication
+        setTimeout(() => {
+          checkExpiringMedicines();
+        }, 500);
       } catch (error) {
         console.error("Error adding medication:", error);
         showToast("Error", "No se pudo agregar el medicamento", "danger");

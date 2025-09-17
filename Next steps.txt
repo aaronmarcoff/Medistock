@@ -1,0 +1,5 @@
+- Agregar spinner al boton de carga para evitar duplicados
+- Hacer que cada cierto tiempo revise la base de datos nuevamente 
+para ver que desde otro dispositivo no se cargo algo
+- En ''solicitudes de medicamentos'' cuando aparece alguna con 
+prioridad alta que suene una notificacion.
